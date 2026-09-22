@@ -2,19 +2,138 @@
 #include <string>
 using namespace std;
 
+// Base Class
+class Vehicle
+{
+private:
+    string vehicleNumber;
+
+public:
+    Vehicle(string number)
+    {
+        vehicleNumber = number;
+    }
+
+    string getVehicleNumber()
+    {
+        return vehicleNumber;
+    }
+
+    virtual void displayVehicleType()
+    {
+        cout << "Vehicle Type: General Vehicle" << endl;
+    }
+};
+
+
+// Derived Class
+class TwoWheeler : public Vehicle
+{
+public:
+    TwoWheeler(string number) : Vehicle(number)
+    {
+    }
+
+    void displayVehicleType() override
+    {
+        cout << "Vehicle Category: Two Wheeler" << endl;
+    }
+};
+
+
+// Derived Class
+class FourWheeler : public Vehicle
+{
+public:
+    FourWheeler(string number) : Vehicle(number)
+    {
+    }
+
+    void displayVehicleType() override
+    {
+        cout << "Vehicle Category: Four Wheeler" << endl;
+    }
+};
+
+
+// Derived Class
+class Bike : public TwoWheeler
+{
+public:
+    Bike(string number) : TwoWheeler(number)
+    {
+    }
+
+    void displayVehicleType() override
+    {
+        cout << "Vehicle Type: Bike" << endl;
+        cout << "Category: Two Wheeler" << endl;
+    }
+};
+
+
+// Derived Class
+class Scooty : public TwoWheeler
+{
+public:
+    Scooty(string number) : TwoWheeler(number)
+    {
+    }
+
+    void displayVehicleType() override
+    {
+        cout << "Vehicle Type: Scooty" << endl;
+        cout << "Category: Two Wheeler" << endl;
+    }
+};
+
+
+// Derived Class
+class Car : public FourWheeler
+{
+public:
+    Car(string number) : FourWheeler(number)
+    {
+    }
+
+    void displayVehicleType() override
+    {
+        cout << "Vehicle Type: Car" << endl;
+        cout << "Category: Four Wheeler" << endl;
+    }
+};
+
+
+// Derived Class
+class Truck : public FourWheeler
+{
+public:
+    Truck(string number) : FourWheeler(number)
+    {
+    }
+
+    void displayVehicleType() override
+    {
+        cout << "Vehicle Type: Truck" << endl;
+        cout << "Category: Four Wheeler" << endl;
+    }
+};
+
+
+// Parking Slot Class
 class ParkingSlot
 {
 private:
     int slotNumber;
-    string vehicleNumber;
     bool available;
+    string vehicleNumber;
 
 public:
     ParkingSlot(int number)
     {
         slotNumber = number;
-        vehicleNumber = "";
         available = true;
+        vehicleNumber = "";
     }
 
     void parkVehicle(string vehicle)
@@ -23,6 +142,7 @@ public:
         {
             vehicleNumber = vehicle;
             available = false;
+
             cout << "Vehicle parked successfully." << endl;
         }
         else
@@ -37,6 +157,7 @@ public:
         {
             vehicleNumber = "";
             available = true;
+
             cout << "Vehicle removed successfully." << endl;
         }
         else
@@ -60,54 +181,32 @@ public:
         }
     }
 
-    virtual void showType()
-    {
-        cout << "Parking Type: General" << endl;
-    }
-
     // Function Overloading
     void searchVehicle(string vehicle)
     {
         if (vehicleNumber == vehicle)
+        {
             cout << "Vehicle found in Slot " << slotNumber << endl;
+        }
         else
+        {
             cout << "Vehicle not found in this slot." << endl;
+        }
     }
 
     void searchVehicle(int number)
     {
         if (slotNumber == number)
+        {
             cout << "Slot found: " << slotNumber << endl;
+        }
         else
+        {
             cout << "Slot not found." << endl;
+        }
     }
 };
 
-class RegularParking : public ParkingSlot
-{
-public:
-    RegularParking(int number) : ParkingSlot(number)
-    {
-    }
-
-    void showType() override
-    {
-        cout << "Parking Type: Regular" << endl;
-    }
-};
-
-class ReservedParking : public ParkingSlot
-{
-public:
-    ReservedParking(int number) : ParkingSlot(number)
-    {
-    }
-
-    void showType() override
-    {
-        cout << "Parking Type: Reserved" << endl;
-    }
-};
 
 int main()
 {
@@ -115,51 +214,86 @@ int main()
     cout << "        SMART PARKING SYSTEM" << endl;
     cout << "========================================" << endl;
 
-    RegularParking regularSlot(1);
-    ReservedParking reservedSlot(2);
-
-    // Polymorphism
-    ParkingSlot* slot1 = &regularSlot;
-    ParkingSlot* slot2 = &reservedSlot;
-
-    cout << "\n[REGULAR PARKING]" << endl;
-    cout << "----------------------------------------" << endl;
-    slot1->displaySlot();
-    slot1->showType();
-
-    cout << "\n[RESERVED PARKING]" << endl;
-    cout << "----------------------------------------" << endl;
-    slot2->displaySlot();
-    slot2->showType();
-
-    string vehicle;
+    string vehicleNumber;
+    int choice;
 
     cout << "\nEnter vehicle number: ";
-    cin >> vehicle;
+    cin >> vehicleNumber;
 
-    regularSlot.parkVehicle(vehicle);
+    cout << "\nSelect Vehicle Type:" << endl;
+    cout << "1. Bike" << endl;
+    cout << "2. Scooty" << endl;
+    cout << "3. Car" << endl;
+    cout << "4. Truck" << endl;
 
-    cout << "\n[AFTER PARKING]" << endl;
+    cout << "\nEnter your choice: ";
+    cin >> choice;
+
+    Vehicle* vehicle = nullptr;
+
+    if (choice == 1)
+    {
+        vehicle = new Bike(vehicleNumber);
+    }
+    else if (choice == 2)
+    {
+        vehicle = new Scooty(vehicleNumber);
+    }
+    else if (choice == 3)
+    {
+        vehicle = new Car(vehicleNumber);
+    }
+    else if (choice == 4)
+    {
+        vehicle = new Truck(vehicleNumber);
+    }
+    else
+    {
+        cout << "Invalid choice." << endl;
+        return 0;
+    }
+
+    cout << "\n----------------------------------------" << endl;
+    cout << "          VEHICLE DETAILS" << endl;
     cout << "----------------------------------------" << endl;
-    regularSlot.displaySlot();
 
-    cout << "\n[SEARCH]" << endl;
+    cout << "Vehicle Number: " << vehicle->getVehicleNumber() << endl;
+
+    // Runtime Polymorphism
+    vehicle->displayVehicleType();
+
+    ParkingSlot slot1(1);
+
+    cout << "\n----------------------------------------" << endl;
+    cout << "          PARKING SLOT" << endl;
+    cout << "----------------------------------------" << endl;
+
+    slot1.displaySlot();
+
+    cout << "\nParking vehicle..." << endl;
+    slot1.parkVehicle(vehicleNumber);
+
+    slot1.displaySlot();
+
+    cout << "\n----------------------------------------" << endl;
+    cout << "             SEARCH" << endl;
     cout << "----------------------------------------" << endl;
 
     cout << "Searching by vehicle number..." << endl;
-    regularSlot.searchVehicle(vehicle);
+    slot1.searchVehicle(vehicleNumber);
 
     cout << "Searching by slot number..." << endl;
-    regularSlot.searchVehicle(1);
+    slot1.searchVehicle(1);
 
-    cout << "\n[VEHICLE EXIT]" << endl;
+    cout << "\n----------------------------------------" << endl;
+    cout << "          VEHICLE EXIT" << endl;
     cout << "----------------------------------------" << endl;
 
-    regularSlot.removeVehicle();
+    slot1.removeVehicle();
 
-    cout << "\n[FINAL SLOT STATUS]" << endl;
-    cout << "----------------------------------------" << endl;
-    regularSlot.displaySlot();
+    slot1.displaySlot();
+
+    delete vehicle;
 
     cout << "\n========================================" << endl;
     cout << "          PROGRAM COMPLETED" << endl;
