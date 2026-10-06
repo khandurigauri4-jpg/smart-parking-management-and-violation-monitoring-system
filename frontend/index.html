@@ -1,13 +1,894 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>frontend</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>SmartPark | Smart Parking Management</title>
+
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/responsive.css">
+</head>
+
+<body>
+
+    <!-- ================= SIDEBAR ================= -->
+
+    <aside class="sidebar">
+
+        <div class="logo-area">
+            <div class="logo-icon">P</div>
+            <div>
+                <h2>SmartPark</h2>
+                <span>Parking Management</span>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+
+            <p class="nav-title">MAIN</p>
+
+            <button class="nav-item active" data-section="dashboard">
+                <span>⌂</span>
+                Dashboard
+            </button>
+
+            <button class="nav-item" data-section="parking">
+                <span>▦</span>
+                Parking
+            </button>
+
+            <button class="nav-item" data-section="reservations">
+                <span>◷</span>
+                Reservations
+            </button>
+
+            <p class="nav-title">MANAGEMENT</p>
+
+            <button class="nav-item" data-section="tickets">
+                <span>▤</span>
+                Digital Tickets
+            </button>
+
+            <button class="nav-item" data-section="violations">
+                <span>⚠</span>
+                Violations
+            </button>
+
+            <button class="nav-item" data-section="history">
+                <span>↺</span>
+                Parking History
+            </button>
+
+            <p class="nav-title">SYSTEM</p>
+
+            <button class="nav-item" data-section="admin">
+                <span>⚙</span>
+                Admin
+            </button>
+
+        </nav>
+
+        <div class="sidebar-bottom">
+            <div class="system-status">
+                <span class="status-dot"></span>
+                System Operational
+            </div>
+
+            <div class="user-card">
+                <div class="user-avatar">G</div>
+                <div>
+                    <strong>Admin</strong>
+                    <small>Parking Manager</small>
+                </div>
+            </div>
+        </div>
+
+    </aside>
+
+
+    <!-- ================= MAIN CONTENT ================= -->
+
+    <main class="main-content">
+
+        <!-- TOP BAR -->
+
+        <header class="topbar">
+
+            <div class="mobile-logo">
+                <div class="logo-icon">P</div>
+                <strong>SmartPark</strong>
+            </div>
+
+            <div class="page-heading">
+                <span id="pageDate"></span>
+            </div>
+
+            <div class="topbar-actions">
+
+                <button class="icon-button" id="notificationBtn">
+                    🔔
+                    <span class="notification-dot"></span>
+                </button>
+
+                <div class="top-user">
+                    <div class="user-avatar">G</div>
+                    <div>
+                        <strong>Gauri</strong>
+                        <small>Administrator</small>
+                    </div>
+                </div>
+
+            </div>
+
+        </header>
+
+
+        <!-- ================================================= -->
+        <!-- DASHBOARD -->
+        <!-- ================================================= -->
+
+        <section id="dashboard" class="page-section active-section">
+
+            <div class="welcome-section">
+
+                <div>
+                    <p class="eyebrow">SMART PARKING SYSTEM</p>
+                    <h1>Good afternoon, Gauri 👋</h1>
+                    <p>
+                        Manage parking, reservations and vehicle activity
+                        from one place.
+                    </p>
+                </div>
+
+                <button class="primary-btn" onclick="openParkModal()">
+                    + Park Vehicle
+                </button>
+
+            </div>
+
+
+            <!-- STATISTICS -->
+
+            <div class="stats-grid">
+
+                <div class="stat-card">
+                    <div class="stat-icon blue">▦</div>
+                    <div>
+                        <span>Total Slots</span>
+                        <h2 id="totalSlotsStat">20</h2>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon green">✓</div>
+                    <div>
+                        <span>Available</span>
+                        <h2 id="availableSlotsStat">20</h2>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon orange">●</div>
+                    <div>
+                        <span>Occupied</span>
+                        <h2 id="occupiedSlotsStat">0</h2>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon purple">◷</div>
+                    <div>
+                        <span>Reservations</span>
+                        <h2 id="reservationStat">0</h2>
+                    </div>
+                </div>
+
+            </div>
+
+
+            <!-- DASHBOARD CONTENT -->
+
+            <div class="dashboard-grid">
+
+                <div class="panel parking-overview">
+
+                    <div class="panel-header">
+                        <div>
+                            <h2>Parking Overview</h2>
+                            <p>Live parking slot availability</p>
+                        </div>
+
+                        <button class="text-btn"
+                                onclick="showSection('parking')">
+                            View All →
+                        </button>
+                    </div>
+
+                    <div class="mini-parking-grid" id="dashboardParkingGrid">
+                    </div>
+
+                    <div class="legend">
+                        <span>
+                            <i class="legend-box available"></i>
+                            Available
+                        </span>
+
+                        <span>
+                            <i class="legend-box occupied"></i>
+                            Occupied
+                        </span>
+
+                        <span>
+                            <i class="legend-box reserved"></i>
+                            Reserved
+                        </span>
+                    </div>
+
+                </div>
+
+
+                <div class="panel quick-actions">
+
+                    <div class="panel-header">
+                        <div>
+                            <h2>Quick Actions</h2>
+                            <p>Frequently used operations</p>
+                        </div>
+                    </div>
+
+                    <button class="quick-action"
+                            onclick="openParkModal()">
+                        <span class="action-icon blue">🚗</span>
+                        <div>
+                            <strong>Park Vehicle</strong>
+                            <small>Allocate a parking slot</small>
+                        </div>
+                        <span>→</span>
+                    </button>
+
+                    <button class="quick-action"
+                            onclick="openSearchModal()">
+                        <span class="action-icon purple">⌕</span>
+                        <div>
+                            <strong>Find Vehicle</strong>
+                            <small>Search by vehicle number</small>
+                        </div>
+                        <span>→</span>
+                    </button>
+
+                    <button class="quick-action"
+                            onclick="showSection('reservations')">
+                        <span class="action-icon orange">◷</span>
+                        <div>
+                            <strong>Reserve Slot</strong>
+                            <small>Create a new reservation</small>
+                        </div>
+                        <span>→</span>
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <!-- RECENT ACTIVITY -->
+
+            <div class="panel recent-panel">
+
+                <div class="panel-header">
+                    <div>
+                        <h2>Recent Parking Activity</h2>
+                        <p>Latest vehicle activity</p>
+                    </div>
+
+                    <button class="text-btn"
+                            onclick="showSection('history')">
+                        View History →
+                    </button>
+                </div>
+
+                <div class="table-wrapper">
+
+                    <table>
+
+                        <thead>
+                            <tr>
+                                <th>Vehicle</th>
+                                <th>Slot</th>
+                                <th>Entry Time</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="recentActivityTable">
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ================================================= -->
+        <!-- PARKING -->
+        <!-- ================================================= -->
+
+        <section id="parking" class="page-section">
+
+            <div class="section-heading">
+
+                <div>
+                    <p class="eyebrow">PARKING MANAGEMENT</p>
+                    <h1>Parking Slots</h1>
+                    <p>Monitor and manage all parking spaces.</p>
+                </div>
+
+                <button class="primary-btn"
+                        onclick="openParkModal()">
+                    + Park Vehicle
+                </button>
+
+            </div>
+
+
+            <div class="parking-stat-bar">
+
+                <div>
+                    <span>Available</span>
+                    <strong id="parkingAvailable">20</strong>
+                </div>
+
+                <div>
+                    <span>Occupied</span>
+                    <strong id="parkingOccupied">0</strong>
+                </div>
+
+                <div>
+                    <span>Reserved</span>
+                    <strong id="parkingReserved">0</strong>
+                </div>
+
+            </div>
+
+
+            <div class="parking-layout">
+
+                <div class="parking-entrance">
+                    <span>ENTRY / EXIT</span>
+                    <div class="entrance-road"></div>
+                </div>
+
+                <div class="parking-grid" id="parkingGrid">
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ================================================= -->
+        <!-- RESERVATIONS -->
+        <!-- ================================================= -->
+
+        <section id="reservations" class="page-section">
+
+            <div class="section-heading">
+
+                <div>
+                    <p class="eyebrow">RESERVATIONS</p>
+                    <h1>Slot Reservations</h1>
+                    <p>Manage upcoming parking reservations.</p>
+                </div>
+
+                <button class="primary-btn"
+                        onclick="openReservationModal()">
+                    + New Reservation
+                </button>
+
+            </div>
+
+
+            <div class="panel">
+
+                <div class="table-wrapper">
+
+                    <table>
+
+                        <thead>
+                            <tr>
+                                <th>Reservation ID</th>
+                                <th>Vehicle</th>
+                                <th>Slot</th>
+                                <th>Date</th>
+                                <th>Time</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="reservationTable">
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ================================================= -->
+        <!-- TICKETS -->
+        <!-- ================================================= -->
+
+        <section id="tickets" class="page-section">
+
+            <div class="section-heading">
+
+                <div>
+                    <p class="eyebrow">DIGITAL TICKETS</p>
+                    <h1>Parking Tickets</h1>
+                    <p>View and manage generated parking tickets.</p>
+                </div>
+
+            </div>
+
+            <div class="ticket-grid" id="ticketGrid">
+            </div>
+
+        </section>
+
+
+        <!-- ================================================= -->
+        <!-- VIOLATIONS -->
+        <!-- ================================================= -->
+
+        <section id="violations" class="page-section">
+
+            <div class="section-heading">
+
+                <div>
+                    <p class="eyebrow">VIOLATION MONITORING</p>
+                    <h1>Parking Violations</h1>
+                    <p>Monitor reported parking violations and fines.</p>
+                </div>
+
+                <button class="primary-btn"
+                        onclick="openViolationModal()">
+                    + Report Violation
+                </button>
+
+            </div>
+
+
+            <div class="violation-summary">
+
+                <div class="summary-card">
+                    <span>Total Violations</span>
+                    <strong id="totalViolations">0</strong>
+                </div>
+
+                <div class="summary-card">
+                    <span>Pending Fines</span>
+                    <strong id="pendingFines">₹0</strong>
+                </div>
+
+                <div class="summary-card">
+                    <span>Resolved</span>
+                    <strong id="resolvedViolations">0</strong>
+                </div>
+
+            </div>
+
+
+            <div class="panel">
+
+                <div class="table-wrapper">
+
+                    <table>
+
+                        <thead>
+                            <tr>
+                                <th>Vehicle</th>
+                                <th>Violation</th>
+                                <th>Fine</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="violationTable">
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ================================================= -->
+        <!-- HISTORY -->
+        <!-- ================================================= -->
+
+        <section id="history" class="page-section">
+
+            <div class="section-heading">
+
+                <div>
+                    <p class="eyebrow">PARKING HISTORY</p>
+                    <h1>Vehicle History</h1>
+                    <p>Complete record of parking activity.</p>
+                </div>
+
+            </div>
+
+
+            <div class="panel">
+
+                <div class="table-wrapper">
+
+                    <table>
+
+                        <thead>
+                            <tr>
+                                <th>Vehicle</th>
+                                <th>Slot</th>
+                                <th>Entry</th>
+                                <th>Exit</th>
+                                <th>Duration</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="historyTable">
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ================================================= -->
+        <!-- ADMIN -->
+        <!-- ================================================= -->
+
+        <section id="admin" class="page-section">
+
+            <div class="section-heading">
+
+                <div>
+                    <p class="eyebrow">SYSTEM ADMINISTRATION</p>
+                    <h1>Admin Dashboard</h1>
+                    <p>System overview and management controls.</p>
+                </div>
+
+            </div>
+
+
+            <div class="admin-grid">
+
+                <div class="admin-card">
+                    <span>Parking Capacity</span>
+                    <strong>20 Slots</strong>
+                    <small>Current system capacity</small>
+                </div>
+
+                <div class="admin-card">
+                    <span>System Status</span>
+                    <strong class="success-text">Operational</strong>
+                    <small>All systems functioning normally</small>
+                </div>
+
+                <div class="admin-card">
+                    <span>Number Plate Recognition</span>
+                    <strong>OpenCV + OCR</strong>
+                    <small>Integration module</small>
+                </div>
+
+                <div class="admin-card">
+                    <span>Database</span>
+                    <strong>MongoDB</strong>
+                    <small>Backend integration pending</small>
+                </div>
+
+            </div>
+
+
+            <div class="panel admin-info">
+
+                <h2>System Architecture</h2>
+
+                <div class="architecture">
+
+                    <div class="architecture-box">
+                        <strong>Frontend</strong>
+                        <span>HTML / CSS / JavaScript</span>
+                    </div>
+
+                    <span>→</span>
+
+                    <div class="architecture-box">
+                        <strong>Backend</strong>
+                        <span>Node.js / Express</span>
+                    </div>
+
+                    <span>→</span>
+
+                    <div class="architecture-box">
+                        <strong>Database</strong>
+                        <span>MongoDB</span>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <!-- ================================================= -->
+    <!-- PARK VEHICLE MODAL -->
+    <!-- ================================================= -->
+
+    <div class="modal-overlay" id="parkModal">
+
+        <div class="modal">
+
+            <div class="modal-header">
+                <div>
+                    <h2>Park Vehicle</h2>
+                    <p>Enter vehicle details to allocate a slot.</p>
+                </div>
+
+                <button class="close-btn"
+                        onclick="closeModal('parkModal')">
+                    ×
+                </button>
+            </div>
+
+
+            <form id="parkForm">
+
+                <label>Vehicle Number</label>
+
+                <input
+                    type="text"
+                    id="vehicleNumber"
+                    placeholder="e.g. UK07AB1234"
+                    maxlength="15"
+                    required
+                >
+
+                <label>Vehicle Type</label>
+
+                <select id="vehicleType">
+                    <option value="Car">Car</option>
+                    <option value="Bike">Bike</option>
+                    <option value="SUV">SUV</option>
+                </select>
+
+                <button class="primary-btn full-width"
+                        type="submit">
+                    Allocate Parking Slot
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+    <!-- ================================================= -->
+    <!-- SEARCH MODAL -->
+    <!-- ================================================= -->
+
+    <div class="modal-overlay" id="searchModal">
+
+        <div class="modal">
+
+            <div class="modal-header">
+
+                <div>
+                    <h2>Find Vehicle</h2>
+                    <p>Search using the vehicle number.</p>
+                </div>
+
+                <button class="close-btn"
+                        onclick="closeModal('searchModal')">
+                    ×
+                </button>
+
+            </div>
+
+            <form id="searchForm">
+
+                <label>Vehicle Number</label>
+
+                <input
+                    type="text"
+                    id="searchVehicleNumber"
+                    placeholder="e.g. UK07AB1234"
+                    required
+                >
+
+                <button class="primary-btn full-width"
+                        type="submit">
+                    Search Vehicle
+                </button>
+
+            </form>
+
+            <div id="searchResult"></div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ================================================= -->
+    <!-- RESERVATION MODAL -->
+    <!-- ================================================= -->
+
+    <div class="modal-overlay" id="reservationModal">
+
+        <div class="modal">
+
+            <div class="modal-header">
+
+                <div>
+                    <h2>New Reservation</h2>
+                    <p>Reserve a parking slot.</p>
+                </div>
+
+                <button class="close-btn"
+                        onclick="closeModal('reservationModal')">
+                    ×
+                </button>
+
+            </div>
+
+            <form id="reservationForm">
+
+                <label>Vehicle Number</label>
+
+                <input
+                    type="text"
+                    id="reservationVehicle"
+                    placeholder="UK07AB1234"
+                    required
+                >
+
+                <label>Date</label>
+
+                <input
+                    type="date"
+                    id="reservationDate"
+                    required
+                >
+
+                <label>Time</label>
+
+                <input
+                    type="time"
+                    id="reservationTime"
+                    required
+                >
+
+                <button class="primary-btn full-width"
+                        type="submit">
+                    Reserve Slot
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+    <!-- ================================================= -->
+    <!-- VIOLATION MODAL -->
+    <!-- ================================================= -->
+
+    <div class="modal-overlay" id="violationModal">
+
+        <div class="modal">
+
+            <div class="modal-header">
+
+                <div>
+                    <h2>Report Violation</h2>
+                    <p>Record a parking violation.</p>
+                </div>
+
+                <button class="close-btn"
+                        onclick="closeModal('violationModal')">
+                    ×
+                </button>
+
+            </div>
+
+            <form id="violationForm">
+
+                <label>Vehicle Number</label>
+
+                <input
+                    type="text"
+                    id="violationVehicle"
+                    placeholder="UK07AB1234"
+                    required
+                >
+
+                <label>Violation Type</label>
+
+                <select id="violationType">
+
+                    <option value="Wrong Parking">
+                        Wrong Parking
+                    </option>
+
+                    <option value="Overstay">
+                        Overstay
+                    </option>
+
+                    <option value="No Parking">
+                        No Parking Zone
+                    </option>
+
+                    <option value="Unauthorized Parking">
+                        Unauthorized Parking
+                    </option>
+
+                </select>
+
+                <label>Fine Amount</label>
+
+                <input
+                    type="number"
+                    id="violationFine"
+                    placeholder="500"
+                    min="0"
+                    required
+                >
+
+                <button class="primary-btn full-width"
+                        type="submit">
+                    Report Violation
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+    <!-- TOAST -->
+
+    <div id="toast" class="toast"></div>
+
+
+    <!-- JAVASCRIPT -->
+
+    <script src="js/parking.js"></script>
+    <script src="js/reservation.js"></script>
+    <script src="js/violation.js"></script>
+    <script src="js/ticket.js"></script>
+    <script src="js/script.js"></script>
+
+</body>
 </html>
