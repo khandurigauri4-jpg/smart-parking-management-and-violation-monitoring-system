@@ -3,15 +3,28 @@
 
 #define MAX_SLOTS 20
 
-typedef struct {
+typedef struct
+{
     int slotId;
     int occupied;
     char vehicleNumber[20];
 } ParkingSlot;
 
+
+/* Initialize all parking slots */
 void initializeSlots(ParkingSlot slots[], int count);
+
+
+/* Display parking status */
 void displaySlots(ParkingSlot slots[], int count);
-int allocateSlot(ParkingSlot slots[], int count, const char vehicleNumber[]);
+
+
+/* Allocate first available slot */
+int allocateSlot(ParkingSlot slots[], int count,
+                 const char vehicleNumber[]);
+
+
+/* Release a parking slot */
 void releaseSlot(ParkingSlot slots[], int count, int slotId);
 
 #endif

@@ -2,6 +2,9 @@
 #include <string.h>
 #include "parking.h"
 
+
+/* ================= INITIALIZE SLOTS ================= */
+
 void initializeSlots(ParkingSlot slots[], int count)
 {
     for (int i = 0; i < count; i++)
@@ -12,10 +15,15 @@ void initializeSlots(ParkingSlot slots[], int count)
     }
 }
 
+
+/* ================= DISPLAY SLOTS ================= */
+
 void displaySlots(ParkingSlot slots[], int count)
 {
-    printf("\n----- PARKING STATUS -----\n");
+    printf("\n========== PARKING STATUS ==========\n");
+
     printf("Slot\tStatus\t\tVehicle\n");
+    printf("------------------------------------\n");
 
     for (int i = 0; i < count; i++)
     {
@@ -33,14 +41,20 @@ void displaySlots(ParkingSlot slots[], int count)
     }
 }
 
-int allocateSlot(ParkingSlot slots[], int count, const char vehicleNumber[])
+
+/* ================= ALLOCATE SLOT ================= */
+
+int allocateSlot(ParkingSlot slots[], int count,
+                 const char vehicleNumber[])
 {
     for (int i = 0; i < count; i++)
     {
         if (slots[i].occupied == 0)
         {
             slots[i].occupied = 1;
-            strcpy(slots[i].vehicleNumber, vehicleNumber);
+
+            strcpy(slots[i].vehicleNumber,
+                   vehicleNumber);
 
             return slots[i].slotId;
         }
@@ -49,6 +63,9 @@ int allocateSlot(ParkingSlot slots[], int count, const char vehicleNumber[])
     return -1;
 }
 
+
+/* ================= RELEASE SLOT ================= */
+
 void releaseSlot(ParkingSlot slots[], int count, int slotId)
 {
     for (int i = 0; i < count; i++)
@@ -56,6 +73,7 @@ void releaseSlot(ParkingSlot slots[], int count, int slotId)
         if (slots[i].slotId == slotId)
         {
             slots[i].occupied = 0;
+
             strcpy(slots[i].vehicleNumber, "");
 
             return;
