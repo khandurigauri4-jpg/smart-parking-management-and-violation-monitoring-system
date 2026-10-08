@@ -3,57 +3,75 @@
 
 using namespace std;
 
-Reservation::Reservation(int id, Vehicle v, ParkingSlot s, string date, string reservationStatus)
-    : vehicle(v), slot(s)
+
+// Default constructor
+Reservation::Reservation()
 {
-    reservationID = id;
-    dateTime = date;
-    status = reservationStatus;
+    reservationID = 0;
+    vehicleNumber = "";
+    slotID = 0;
+    reservationDate = "";
+    status = "Pending";
 }
 
+
+// Parameterized constructor
+Reservation::Reservation(
+    int id,
+    string vehicle,
+    int slot,
+    string date
+)
+{
+    reservationID = id;
+    vehicleNumber = vehicle;
+    slotID = slot;
+    reservationDate = date;
+    status = "Pending";
+}
+
+
+// Setters
 void Reservation::setReservationID(int id)
 {
     reservationID = id;
 }
 
-void Reservation::setVehicle(Vehicle v)
+void Reservation::setVehicleNumber(string vehicle)
 {
-    vehicle = v;
+    vehicleNumber = vehicle;
 }
 
-void Reservation::setSlot(ParkingSlot s)
+void Reservation::setSlotID(int slot)
 {
-    slot = s;
+    slotID = slot;
 }
 
-void Reservation::setDateTime(string date)
+void Reservation::setReservationDate(string date)
 {
-    dateTime = date;
+    reservationDate = date;
 }
 
-void Reservation::setStatus(string reservationStatus)
-{
-    status = reservationStatus;
-}
 
+// Getters
 int Reservation::getReservationID()
 {
     return reservationID;
 }
 
-Vehicle Reservation::getVehicle()
+string Reservation::getVehicleNumber()
 {
-    return vehicle;
+    return vehicleNumber;
 }
 
-ParkingSlot Reservation::getSlot()
+int Reservation::getSlotID()
 {
-    return slot;
+    return slotID;
 }
 
-string Reservation::getDateTime()
+string Reservation::getReservationDate()
 {
-    return dateTime;
+    return reservationDate;
 }
 
 string Reservation::getStatus()
@@ -61,15 +79,34 @@ string Reservation::getStatus()
     return status;
 }
 
+
+// Confirm reservation
+void Reservation::confirmReservation()
+{
+    status = "Confirmed";
+}
+
+
+// Complete reservation
+void Reservation::completeReservation()
+{
+    status = "Completed";
+}
+
+
+// Cancel reservation
+void Reservation::cancelReservation()
+{
+    status = "Cancelled";
+}
+
+
+// Display reservation
 void Reservation::displayReservation()
 {
     cout << "Reservation ID: " << reservationID << endl;
-    cout << "Date/Time: " << dateTime << endl;
+    cout << "Vehicle Number: " << vehicleNumber << endl;
+    cout << "Slot ID: " << slotID << endl;
+    cout << "Reservation Date: " << reservationDate << endl;
     cout << "Status: " << status << endl;
-
-    cout << "Vehicle: "
-         << vehicle.getVehicleNumber() << endl;
-
-    cout << "Parking Slot: "
-         << slot.getSlotID() << endl;
 }

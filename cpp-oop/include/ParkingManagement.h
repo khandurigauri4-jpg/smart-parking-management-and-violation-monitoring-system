@@ -17,20 +17,51 @@ private:
 
     ParkingSlot slots[MAX_SLOTS];
     Vehicle parkedVehicles[MAX_SLOTS];
+    Ticket parkingTickets[MAX_SLOTS];
+    Violation violations[MAX_SLOTS];
 
-    int totalTwoWheelerSlots;
-    int totalFourWheelerSlots;
+    string violationVehicles[MAX_SLOTS];
+    int vehicleViolationScores[MAX_SLOTS];
+    bool blacklistedVehicles[MAX_SLOTS];
+
+    int totalSlots;
+    int violationCount;
+    int trackedVehicleCount;
 
     bool slotOccupied[MAX_SLOTS];
+    bool ticketActive[MAX_SLOTS];
 
 public:
-    ParkingManagement(int twoWheelerSlots, int fourWheelerSlots);
+    ParkingManagement(int numberOfSlots);
 
-    void parkVehicle(Vehicle vehicle);
-    void removeVehicle(string vehicleNumber);
+    // Vehicle entry
+    void processVehicleEntry(
+        Vehicle vehicle,
+        int allocatedSlotID,
+        int allowedHours,
+        string entryTime
+    );
 
+    // Vehicle exit
+    void processVehicleExit(
+        string vehicleNumber,
+        int actualHours,
+        string exitTime
+    );
+
+    // Parking status
     void displayParkingStatus();
 
+    // Ticket management
+    void displayTicket(string vehicleNumber);
+
+    // Violation management
+    void displayVehicleViolation(string vehicleNumber);
+
+    // Check blacklist
+    bool isVehicleBlacklisted(string vehicleNumber);
+
+    // Existing project-related functions
     void addUser(User user);
     void addReservation(Reservation reservation);
     void addTicket(Ticket ticket);
@@ -38,7 +69,7 @@ public:
 
     void displayUser(User user);
     void displayReservation(Reservation reservation);
-    void displayTicket(Ticket ticket);
+    void displayTicketDetails(Ticket ticket);
     void displayViolation(Violation violation);
 };
 

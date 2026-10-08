@@ -3,54 +3,105 @@
 
 using namespace std;
 
-Ticket::Ticket(int id, Reservation r, string entry, string exit, double fee, string ticketStatus)
-    : reservation(r)
+
+// Default constructor
+Ticket::Ticket()
 {
-    ticketID = id;
-    entryTime = entry;
-    exitTime = exit;
-    parkingFee = fee;
-    status = ticketStatus;
+    ticketID = 0;
+    vehicleNumber = "";
+    slotID = 0;
+
+    entryTime = "";
+    exitTime = "";
+
+    allowedHours = 0;
+    actualHours = 0;
+
+    fee = 0.0;
+
+    status = "Created";
 }
 
+
+// Parameterized constructor
+Ticket::Ticket(
+    int id,
+    string vehicle,
+    int slot
+)
+{
+    ticketID = id;
+    vehicleNumber = vehicle;
+    slotID = slot;
+
+    entryTime = "";
+    exitTime = "";
+
+    allowedHours = 0;
+    actualHours = 0;
+
+    fee = 0.0;
+
+    status = "Created";
+}
+
+
+// Setters
 void Ticket::setTicketID(int id)
 {
     ticketID = id;
 }
 
-void Ticket::setReservation(Reservation r)
+void Ticket::setVehicleNumber(string vehicle)
 {
-    reservation = r;
+    vehicleNumber = vehicle;
 }
 
-void Ticket::setEntryTime(string entry)
+void Ticket::setSlotID(int slot)
 {
-    entryTime = entry;
+    slotID = slot;
 }
 
-void Ticket::setExitTime(string exit)
+void Ticket::setEntryTime(string time)
 {
-    exitTime = exit;
+    entryTime = time;
 }
 
-void Ticket::setParkingFee(double fee)
+void Ticket::setExitTime(string time)
 {
-    parkingFee = fee;
+    exitTime = time;
 }
 
-void Ticket::setStatus(string ticketStatus)
+void Ticket::setAllowedHours(int hours)
 {
-    status = ticketStatus;
+    allowedHours = hours;
 }
 
+void Ticket::setActualHours(int hours)
+{
+    actualHours = hours;
+}
+
+void Ticket::setFee(double amount)
+{
+    fee = amount;
+}
+
+
+// Getters
 int Ticket::getTicketID()
 {
     return ticketID;
 }
 
-Reservation Ticket::getReservation()
+string Ticket::getVehicleNumber()
 {
-    return reservation;
+    return vehicleNumber;
+}
+
+int Ticket::getSlotID()
+{
+    return slotID;
 }
 
 string Ticket::getEntryTime()
@@ -63,9 +114,19 @@ string Ticket::getExitTime()
     return exitTime;
 }
 
-double Ticket::getParkingFee()
+int Ticket::getAllowedHours()
 {
-    return parkingFee;
+    return allowedHours;
+}
+
+int Ticket::getActualHours()
+{
+    return actualHours;
+}
+
+double Ticket::getFee()
+{
+    return fee;
 }
 
 string Ticket::getStatus()
@@ -74,28 +135,79 @@ string Ticket::getStatus()
 }
 
 
-// Function overloading - normal parking fee
+// Calculate parking fee
+// Basic parking rate: Rs. 20 per hour
 double Ticket::calculateFee(int hours)
 {
-    return hours * 50;
+    fee = hours * 20.0;
+
+    return fee;
 }
 
 
-// Function overloading - parking fee with extra charge
-double Ticket::calculateFee(int hours, double extraCharge)
+// Calculate parking fee with extra charge
+// This demonstrates function overloading
+double Ticket::calculateFee(
+    int hours,
+    double extraCharge
+)
 {
-    return (hours * 50) + extraCharge;
+    fee = (hours * 20.0) + extraCharge;
+
+    return fee;
 }
 
 
+// Activate ticket
+void Ticket::activateTicket()
+{
+    status = "Active";
+}
+
+
+// Complete ticket
+void Ticket::completeTicket()
+{
+    status = "Completed";
+}
+
+
+// Display ticket
 void Ticket::displayTicket()
 {
-    cout << "Ticket ID: " << ticketID << endl;
-    cout << "Entry Time: " << entryTime << endl;
-    cout << "Exit Time: " << exitTime << endl;
-    cout << "Parking Fee: Rs. " << parkingFee << endl;
-    cout << "Status: " << status << endl;
+    cout << "Ticket ID: "
+         << ticketID
+         << endl;
 
-    cout << "Reservation ID: "
-         << reservation.getReservationID() << endl;
+    cout << "Vehicle Number: "
+         << vehicleNumber
+         << endl;
+
+    cout << "Slot ID: "
+         << slotID
+         << endl;
+
+    cout << "Entry Time: "
+         << entryTime
+         << endl;
+
+    cout << "Exit Time: "
+         << exitTime
+         << endl;
+
+    cout << "Allowed Parking Hours: "
+         << allowedHours
+         << endl;
+
+    cout << "Actual Parking Hours: "
+         << actualHours
+         << endl;
+
+    cout << "Parking Fee: Rs. "
+         << fee
+         << endl;
+
+    cout << "Status: "
+         << status
+         << endl;
 }

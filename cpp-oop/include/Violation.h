@@ -2,7 +2,6 @@
 #define VIOLATION_H
 
 #include <string>
-#include "Vehicle.h"
 
 using namespace std;
 
@@ -10,29 +9,47 @@ class Violation
 {
 private:
     int violationID;
-    Vehicle vehicle;
+    string vehicleNumber;
     string violationType;
+
     double fineAmount;
-    string dateTime;
-    string status;
+
+    int violationScore;
+    bool blacklisted;
 
 public:
-    Violation(int id, Vehicle v, string type, double fine, string date, string violationStatus);
+    // Constructors
+    Violation();
 
+    Violation(
+        int id,
+        string vehicle,
+        string type,
+        double fine
+    );
+
+    // Setters
     void setViolationID(int id);
-    void setVehicle(Vehicle v);
+    void setVehicleNumber(string vehicle);
     void setViolationType(string type);
     void setFineAmount(double fine);
-    void setDateTime(string date);
-    void setStatus(string violationStatus);
 
+    // Getters
     int getViolationID();
-    Vehicle getVehicle();
+    string getVehicleNumber();
     string getViolationType();
     double getFineAmount();
-    string getDateTime();
-    string getStatus();
 
+    int getViolationScore();
+    bool isBlacklisted();
+
+    // Violation scoring
+    void addViolationScore(int points);
+
+    // Blacklisting
+    void blacklistVehicle();
+
+    // Display
     void displayViolation();
 };
 

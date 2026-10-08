@@ -2,7 +2,6 @@
 #define TICKET_H
 
 #include <string>
-#include "Reservation.h"
 
 using namespace std;
 
@@ -10,33 +9,70 @@ class Ticket
 {
 private:
     int ticketID;
-    Reservation reservation;
+    string vehicleNumber;
+    int slotID;
+
     string entryTime;
     string exitTime;
-    double parkingFee;
+
+    int allowedHours;
+    int actualHours;
+
+    double fee;
+
     string status;
 
 public:
-    Ticket(int id, Reservation r, string entry, string exit, double fee, string ticketStatus);
+    // Constructors
+    Ticket();
 
+    Ticket(
+        int id,
+        string vehicle,
+        int slot
+    );
+
+    // Setters
     void setTicketID(int id);
-    void setReservation(Reservation r);
-    void setEntryTime(string entry);
-    void setExitTime(string exit);
-    void setParkingFee(double fee);
-    void setStatus(string ticketStatus);
+    void setVehicleNumber(string vehicle);
+    void setSlotID(int slot);
 
+    void setEntryTime(string time);
+    void setExitTime(string time);
+
+    void setAllowedHours(int hours);
+    void setActualHours(int hours);
+
+    void setFee(double amount);
+
+    // Getters
     int getTicketID();
-    Reservation getReservation();
+    string getVehicleNumber();
+    int getSlotID();
+
     string getEntryTime();
     string getExitTime();
-    double getParkingFee();
+
+    int getAllowedHours();
+    int getActualHours();
+
+    double getFee();
     string getStatus();
 
-    // Function overloading
+    // Parking fee calculation
     double calculateFee(int hours);
-    double calculateFee(int hours, double extraCharge);
 
+    // Function overloading
+    double calculateFee(
+        int hours,
+        double extraCharge
+    );
+
+    // Ticket lifecycle
+    void activateTicket();
+    void completeTicket();
+
+    // Display ticket
     void displayTicket();
 };
 

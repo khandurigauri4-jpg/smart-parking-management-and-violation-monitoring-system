@@ -3,24 +3,49 @@
 
 using namespace std;
 
-Violation::Violation(int id, Vehicle v, string type, double fine, string date, string violationStatus)
-    : vehicle(v)
+
+// Default constructor
+Violation::Violation()
 {
-    violationID = id;
-    violationType = type;
-    fineAmount = fine;
-    dateTime = date;
-    status = violationStatus;
+    violationID = 0;
+    vehicleNumber = "";
+    violationType = "";
+
+    fineAmount = 0.0;
+
+    violationScore = 0;
+    blacklisted = false;
 }
 
+
+// Parameterized constructor
+Violation::Violation(
+    int id,
+    string vehicle,
+    string type,
+    double fine
+)
+{
+    violationID = id;
+    vehicleNumber = vehicle;
+    violationType = type;
+
+    fineAmount = fine;
+
+    violationScore = 0;
+    blacklisted = false;
+}
+
+
+// Setters
 void Violation::setViolationID(int id)
 {
     violationID = id;
 }
 
-void Violation::setVehicle(Vehicle v)
+void Violation::setVehicleNumber(string vehicle)
 {
-    vehicle = v;
+    vehicleNumber = vehicle;
 }
 
 void Violation::setViolationType(string type)
@@ -33,24 +58,16 @@ void Violation::setFineAmount(double fine)
     fineAmount = fine;
 }
 
-void Violation::setDateTime(string date)
-{
-    dateTime = date;
-}
 
-void Violation::setStatus(string violationStatus)
-{
-    status = violationStatus;
-}
-
+// Getters
 int Violation::getViolationID()
 {
     return violationID;
 }
 
-Vehicle Violation::getVehicle()
+string Violation::getVehicleNumber()
 {
-    return vehicle;
+    return vehicleNumber;
 }
 
 string Violation::getViolationType()
@@ -63,24 +80,71 @@ double Violation::getFineAmount()
     return fineAmount;
 }
 
-string Violation::getDateTime()
+int Violation::getViolationScore()
 {
-    return dateTime;
+    return violationScore;
 }
 
-string Violation::getStatus()
+bool Violation::isBlacklisted()
 {
-    return status;
+    return blacklisted;
 }
 
+
+// Add violation score
+void Violation::addViolationScore(int points)
+{
+    violationScore += points;
+
+    if (violationScore >= 10)
+    {
+        blacklisted = true;
+    }
+}
+
+
+// Blacklist vehicle
+void Violation::blacklistVehicle()
+{
+    blacklisted = true;
+}
+
+
+// Display violation
 void Violation::displayViolation()
 {
-    cout << "Violation ID: " << violationID << endl;
-    cout << "Vehicle Number: "
-         << vehicle.getVehicleNumber() << endl;
+    cout << endl;
+    cout << "----- Violation Details -----"
+         << endl;
 
-    cout << "Violation Type: " << violationType << endl;
-    cout << "Fine Amount: Rs. " << fineAmount << endl;
-    cout << "Date/Time: " << dateTime << endl;
-    cout << "Status: " << status << endl;
+    cout << "Violation ID: "
+         << violationID
+         << endl;
+
+    cout << "Vehicle Number: "
+         << vehicleNumber
+         << endl;
+
+    cout << "Violation Type: "
+         << violationType
+         << endl;
+
+    cout << "Fine Amount: Rs. "
+         << fineAmount
+         << endl;
+
+    cout << "Violation Score: "
+         << violationScore
+         << endl;
+
+    if (blacklisted)
+    {
+        cout << "Blacklist Status: Blacklisted"
+             << endl;
+    }
+    else
+    {
+        cout << "Blacklist Status: Not Blacklisted"
+             << endl;
+    }
 }

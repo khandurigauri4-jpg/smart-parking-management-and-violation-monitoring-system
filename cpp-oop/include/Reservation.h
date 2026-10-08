@@ -2,8 +2,6 @@
 #define RESERVATION_H
 
 #include <string>
-#include "Vehicle.h"
-#include "ParkingSlot.h"
 
 using namespace std;
 
@@ -11,26 +9,40 @@ class Reservation
 {
 private:
     int reservationID;
-    Vehicle vehicle;
-    ParkingSlot slot;
-    string dateTime;
+    string vehicleNumber;
+    int slotID;
+    string reservationDate;
     string status;
 
 public:
-    Reservation(int id, Vehicle v, ParkingSlot s, string date, string reservationStatus);
+    // Constructors
+    Reservation();
+    Reservation(
+        int id,
+        string vehicle,
+        int slot,
+        string date
+    );
 
+    // Setters
     void setReservationID(int id);
-    void setVehicle(Vehicle v);
-    void setSlot(ParkingSlot s);
-    void setDateTime(string date);
-    void setStatus(string reservationStatus);
+    void setVehicleNumber(string vehicle);
+    void setSlotID(int slot);
+    void setReservationDate(string date);
 
+    // Getters
     int getReservationID();
-    Vehicle getVehicle();
-    ParkingSlot getSlot();
-    string getDateTime();
+    string getVehicleNumber();
+    int getSlotID();
+    string getReservationDate();
     string getStatus();
 
+    // Reservation behaviour
+    void confirmReservation();
+    void completeReservation();
+    void cancelReservation();
+
+    // Display
     void displayReservation();
 };
 

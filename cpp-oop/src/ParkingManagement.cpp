@@ -3,185 +3,531 @@
 
 using namespace std;
 
-ParkingManagement::ParkingManagement(
-    int twoWheelerSlots,
-    int fourWheelerSlots
-)
+
+// Constructor
+ParkingManagement::ParkingManagement(int numberOfSlots)
 {
-    totalTwoWheelerSlots = twoWheelerSlots;
-    totalFourWheelerSlots = fourWheelerSlots;
+    totalSlots = numberOfSlots;
 
-    int slotNumber = 1;
+    violationCount = 0;
+    trackedVehicleCount = 0;
 
-    // Create two-wheeler slots
-    for (int i = 0; i < totalTwoWheelerSlots; i++)
+    for (int i = 0; i < totalSlots; i++)
     {
-        slots[i] = ParkingSlot(slotNumber, "Two Wheeler");
+        slots[i] = ParkingSlot(
+            i + 1,
+            "Parking Slot"
+        );
+
         slotOccupied[i] = false;
-        slotNumber++;
+        ticketActive[i] = false;
     }
 
-    // Create four-wheeler slots
-    for (int i = 0; i < totalFourWheelerSlots; i++)
+    for (int i = 0; i < MAX_SLOTS; i++)
     {
-        int index = totalTwoWheelerSlots + i;
-
-        slots[index] = ParkingSlot(slotNumber, "Four Wheeler");
-        slotOccupied[index] = false;
-        slotNumber++;
+        violationVehicles[i] = "";
+        vehicleViolationScores[i] = 0;
+        blacklistedVehicles[i] = false;
     }
 }
 
 
-// Park a vehicle
-void ParkingManagement::parkVehicle(Vehicle vehicle)
+// Check whether vehicle is blacklisted
+bool ParkingManagement::isVehicleBlacklisted(
+    string vehicleNumber
+)
 {
-    string vehicleType = vehicle.getVehicleType();
-
-    int startIndex = 0;
-    int endIndex = totalTwoWheelerSlots;
-
-    if (vehicleType == "Car")
+    for (int i = 0; i < trackedVehicleCount; i++)
     {
-        startIndex = totalTwoWheelerSlots;
-        endIndex = totalTwoWheelerSlots + totalFourWheelerSlots;
-    }
-
-    for (int i = startIndex; i < endIndex; i++)
-    {
-        if (!slotOccupied[i])
+        if (violationVehicles[i] == vehicleNumber)
         {
-            parkedVehicles[i] = vehicle;
-            slotOccupied[i] = true;
-            slots[i].setAvailability(false);
-
-            cout << "Vehicle successfully parked." << endl;
-            cout << "Vehicle Number: "
-                 << vehicle.getVehicleNumber() << endl;
-            cout << "Owner: "
-                 << vehicle.getOwnerName() << endl;
-            cout << "Slot Assigned: "
-                 << slots[i].getSlotID() << endl;
-
-            return;
+            return blacklistedVehicles[i];
         }
     }
 
-    cout << "Sorry, no suitable parking slot is available." << endl;
+    return false;
 }
 
 
-// Remove a vehicle
-void ParkingManagement::removeVehicle(string vehicleNumber)
+// Process vehicle entry
+void ParkingManagement::processVehicleEntry(
+    Vehicle vehicle,
+    int allocatedSlotID,
+    int allowedHours,
+    string entryTime
+)
 {
-    for (int i = 0; i < totalTwoWheelerSlots + totalFourWheelerSlots; i++)
+    // Check blacklist before allowing entry
+    if (isVehicleBlacklisted(
+            vehicle.getVehicleNumber()
+        ))
     {
-        if (slotOccupied[i] &&
-            parkedVehicles[i].getVehicleNumber() == vehicleNumber)
+        cout << endl;
+        cout << "Vehicle is blacklisted."
+             << endl;
+
+        cout << "Parking entry denied."
+             << endl;
+
+        return;
+    }
+
+
+    int index = allocatedSlotID - 1;
+
+    if (index < 0 || index >= totalSlots)
+    {
+        cout << "Invalid parking slot."
+             << endl;
+
+        return;
+    }
+
+
+    if (slotOccupied[index])
+    {
+        cout << "The allocated parking slot is already occupied."
+             << endl;
+
+        return;
+    }
+
+
+    // Store vehicle
+    parkedVehicles[index] = vehicle;
+
+
+    // Mark slot occupied
+    slotOccupied[index] = true;
+    slots[index].setAvailability(false);
+
+
+    // Create ticket
+    parkingTickets[index] = Ticket(
+        index + 1,
+        vehicle.getVehicleNumber(),
+        allocatedSlotID
+    );
+
+
+    parkingTickets[index].setEntryTime(entryTime);
+    parkingTickets[index].setAllowedHours(allowedHours);
+
+    parkingTickets[index].activateTicket();
+
+    ticketActive[index] = true;
+
+
+    cout << endl;
+    cout << "Vehicle entry processed successfully."
+         << endl;
+
+    cout << "Vehicle Number: "
+         << vehicle.getVehicleNumber()
+         << endl;
+
+    cout << "Owner: "
+         << vehicle.getOwnerName()
+         << endl;
+
+    cout << "Vehicle Type: "
+         << vehicle.getVehicleType()
+         << endl;
+
+    cout << "Allocated Slot: "
+         << allocatedSlotID
+         << endl;
+
+    cout << "Ticket ID: "
+         << parkingTickets[index].getTicketID()
+         << endl;
+
+    cout << "Allowed Parking Time: "
+         << allowedHours
+         << " hour(s)"
+         << endl;
+
+    cout << "Ticket Status: Active"
+         << endl;
+}
+
+
+// Process vehicle exit
+void ParkingManagement::processVehicleExit(
+    string vehicleNumber,
+    int actualHours,
+    string exitTime
+)
+{
+    for (int i = 0; i < totalSlots; i++)
+    {
+        if (
+            slotOccupied[i] &&
+            parkedVehicles[i].getVehicleNumber()
+                == vehicleNumber
+        )
         {
+            parkingTickets[i].setActualHours(actualHours);
+            parkingTickets[i].setExitTime(exitTime);
+
+
+            int allowedHours =
+                parkingTickets[i].getAllowedHours();
+
+
+            double fee = 0.0;
+
+
+            // Normal parking
+            if (actualHours <= allowedHours)
+            {
+                fee =
+                    parkingTickets[i].calculateFee(
+                        actualHours
+                    );
+
+                cout << endl;
+                cout << "Vehicle exited within allowed time."
+                     << endl;
+            }
+
+
+            // Overstay
+            else
+            {
+                int extraHours =
+                    actualHours - allowedHours;
+
+                double penalty =
+                    extraHours * 20.0;
+
+
+                fee =
+                    parkingTickets[i].calculateFee(
+                        actualHours,
+                        penalty
+                    );
+
+
+                cout << endl;
+                cout << "Vehicle overstayed."
+                     << endl;
+
+                cout << "Extra Hours: "
+                     << extraHours
+                     << endl;
+
+                cout << "Penalty: Rs. "
+                     << penalty
+                     << endl;
+
+
+                // -----------------------------
+                // Find existing violation record
+                // -----------------------------
+
+                int vehicleIndex = -1;
+
+                for (int j = 0;
+                     j < trackedVehicleCount;
+                     j++)
+                {
+                    if (
+                        violationVehicles[j]
+                            == vehicleNumber
+                    )
+                    {
+                        vehicleIndex = j;
+                        break;
+                    }
+                }
+
+
+                // First violation for vehicle
+                if (vehicleIndex == -1)
+                {
+                    vehicleIndex =
+                        trackedVehicleCount;
+
+                    violationVehicles[
+                        vehicleIndex
+                    ] = vehicleNumber;
+
+                    vehicleViolationScores[
+                        vehicleIndex
+                    ] = 0;
+
+                    blacklistedVehicles[
+                        vehicleIndex
+                    ] = false;
+
+                    trackedVehicleCount++;
+                }
+
+
+                // Add 3 points
+                vehicleViolationScores[
+                    vehicleIndex
+                ] += 3;
+
+
+                // Create violation object
+                Violation newViolation(
+                    violationCount + 1,
+                    vehicleNumber,
+                    "Overstay",
+                    penalty
+                );
+
+
+                newViolation.addViolationScore(3);
+
+
+                violations[
+                    violationCount
+                ] = newViolation;
+
+                violationCount++;
+
+
+                cout << "Violation recorded."
+                     << endl;
+
+                cout << "Violation Score Added: 3"
+                     << endl;
+
+                cout << "Total Violation Score: "
+                     << vehicleViolationScores[
+                            vehicleIndex
+                        ]
+                     << endl;
+
+
+                // Blacklist at 10 points
+                if (
+                    vehicleViolationScores[
+                        vehicleIndex
+                    ] >= 10
+                )
+                {
+                    blacklistedVehicles[
+                        vehicleIndex
+                    ] = true;
+
+                    cout << "Vehicle has been BLACKLISTED."
+                         << endl;
+                }
+                else
+                {
+                    cout << "Vehicle is not blacklisted."
+                         << endl;
+                }
+            }
+
+
+            // Complete ticket
+            parkingTickets[i].completeTicket();
+
+            ticketActive[i] = false;
+
+
+            // Release slot
             slotOccupied[i] = false;
             slots[i].setAvailability(true);
 
-            cout << "Vehicle exited successfully." << endl;
+
+            cout << endl;
+            cout << "Vehicle exit processed successfully."
+                 << endl;
+
             cout << "Vehicle Number: "
-                 << vehicleNumber << endl;
+                 << vehicleNumber
+                 << endl;
+
             cout << "Slot Released: "
-                 << slots[i].getSlotID() << endl;
+                 << slots[i].getSlotID()
+                 << endl;
+
+            cout << "Total Parking Fee: Rs. "
+                 << fee
+                 << endl;
+
+            cout << "Ticket Status: Completed"
+                 << endl;
 
             return;
         }
     }
 
-    cout << "Vehicle not found in parking." << endl;
+
+    cout << "Vehicle not found in parking."
+         << endl;
 }
 
 
 // Display parking status
 void ParkingManagement::displayParkingStatus()
 {
-    int totalSlots =
-        totalTwoWheelerSlots + totalFourWheelerSlots;
+    int availableSlots = 0;
+    int occupiedSlots = 0;
 
-    int availableTwoWheelers = 0;
-    int availableFourWheelers = 0;
 
-    for (int i = 0; i < totalTwoWheelerSlots; i++)
+    for (int i = 0; i < totalSlots; i++)
     {
-        if (!slotOccupied[i])
+        if (slotOccupied[i])
         {
-            availableTwoWheelers++;
+            occupiedSlots++;
+        }
+        else
+        {
+            availableSlots++;
         }
     }
 
-    for (int i = totalTwoWheelerSlots; i < totalSlots; i++)
-    {
-        if (!slotOccupied[i])
-        {
-            availableFourWheelers++;
-        }
-    }
 
     cout << endl;
-    cout << "----- Parking Availability -----" << endl;
+    cout << "----- Parking Status -----"
+         << endl;
 
-    cout << "Two Wheeler: "
-         << availableTwoWheelers
-         << " / "
-         << totalTwoWheelerSlots
-         << " available" << endl;
+    cout << "Total Slots: "
+         << totalSlots
+         << endl;
 
-    cout << "Four Wheeler: "
-         << availableFourWheelers
-         << " / "
-         << totalFourWheelerSlots
-         << " available" << endl;
+    cout << "Occupied Slots: "
+         << occupiedSlots
+         << endl;
+
+    cout << "Available Slots: "
+         << availableSlots
+         << endl;
 
     cout << endl;
 }
 
 
-// Existing project-related functions
+// Display ticket for a vehicle
+void ParkingManagement::displayTicket(
+    string vehicleNumber
+)
+{
+    for (int i = 0; i < totalSlots; i++)
+    {
+        if (
+            parkedVehicles[i].getVehicleNumber()
+                == vehicleNumber
+        )
+        {
+            parkingTickets[i].displayTicket();
+
+            return;
+        }
+    }
+
+
+    cout << "No active ticket found."
+         << endl;
+}
+
+
+// Display violation for a vehicle
+void ParkingManagement::displayVehicleViolation(
+    string vehicleNumber
+)
+{
+    bool found = false;
+
+
+    for (int i = 0; i < violationCount; i++)
+    {
+        if (
+            violations[i].getVehicleNumber()
+                == vehicleNumber
+        )
+        {
+            violations[i].displayViolation();
+
+            found = true;
+        }
+    }
+
+
+    if (!found)
+    {
+        cout << "No violation found for this vehicle."
+             << endl;
+    }
+}
+
+
+// Add user
 void ParkingManagement::addUser(User user)
 {
     cout << "User added: "
-         << user.getUserName() << endl;
+         << user.getUserName()
+         << endl;
 }
 
-void ParkingManagement::addReservation(Reservation reservation)
+
+// Add reservation
+void ParkingManagement::addReservation(
+    Reservation reservation
+)
 {
     cout << "Reservation added: "
-         << reservation.getReservationID() << endl;
+         << reservation.getReservationID()
+         << endl;
 }
 
+
+// Add ticket
 void ParkingManagement::addTicket(Ticket ticket)
 {
     cout << "Ticket added: "
-         << ticket.getTicketID() << endl;
+         << ticket.getTicketID()
+         << endl;
 }
 
-void ParkingManagement::addViolation(Violation violation)
+
+// Add violation
+void ParkingManagement::addViolation(
+    Violation violation
+)
 {
     cout << "Violation added: "
-         << violation.getViolationID() << endl;
+         << violation.getViolationID()
+         << endl;
 }
 
 
+// Display user
 void ParkingManagement::displayUser(User user)
 {
     user.displayUser();
 }
 
-void ParkingManagement::displayReservation(Reservation reservation)
+
+// Display reservation
+void ParkingManagement::displayReservation(
+    Reservation reservation
+)
 {
     reservation.displayReservation();
 }
 
-void ParkingManagement::displayTicket(Ticket ticket)
+
+// Display ticket details
+void ParkingManagement::displayTicketDetails(
+    Ticket ticket
+)
 {
     ticket.displayTicket();
 }
 
-void ParkingManagement::displayViolation(Violation violation)
+
+// Display violation
+void ParkingManagement::displayViolation(
+    Violation violation
+)
 {
     violation.displayViolation();
 }
