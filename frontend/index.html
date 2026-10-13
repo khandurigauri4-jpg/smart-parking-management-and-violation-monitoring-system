@@ -1,185 +1,158 @@
+
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
-
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Smart Parking Management System</title>
-
     <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
-
-    <!-- Header -->
     <header>
-        <div class="logo">
-            Smart Parking
-        </div>
-
+        <div class="logo">Smart Parking</div>
         <nav>
             <a href="#home">Home</a>
             <a href="#parking">Parking</a>
+            <a href="#reservations">Reservations</a>\n            <a href="#navigation">Navigation</a>
             <a href="#status">Status</a>
         </nav>
     </header>
 
-
-    <!-- Home Section -->
     <section id="home" class="hero">
-
         <div class="hero-content">
-
             <h1>Smart Parking Management System</h1>
-
-            <p>
-                Find, manage and monitor parking spaces
-                easily and efficiently.
-            </p>
-
-            <button onclick="showParking()">
-                Manage Parking
-            </button>
-
+            <p>Find, manage and reserve parking spaces easily and efficiently.</p>
+            <button onclick="showParking()">Manage Parking</button>
         </div>
-
     </section>
 
-
-    <!-- Parking Section -->
     <section id="parking" class="parking-section">
-
         <h2>Parking Management</h2>
-
         <div class="parking-container">
-
-            <!-- Park Vehicle -->
             <div class="card">
-
                 <h3>Park Vehicle</h3>
-
                 <p>Enter your vehicle number</p>
-
-                <input
-                    type="text"
-                    id="vehicleNumber"
-                    placeholder="e.g. UK07AB1234"
-                >
-
-                <button onclick="parkVehicle()">
-                    Park Vehicle
-                </button>
-
+                <input type="text" id="vehicleNumber"
+                       placeholder="e.g. UK07AB1234">
+                <button onclick="parkVehicle()">Park Vehicle</button>
             </div>
 
-
-            <!-- Release Vehicle -->
             <div class="card">
-
                 <h3>Release Vehicle</h3>
-
                 <p>Enter the parking slot number</p>
-
-                <input
-                    type="number"
-                    id="slotNumber"
-                    placeholder="e.g. 1"
-                >
-
-                <button onclick="releaseVehicle()">
-                    Release Slot
-                </button>
-
+                <input type="number" id="slotNumber"
+                       min="1" max="10" placeholder="e.g. 1">
+                <button onclick="releaseVehicle()">Release Slot</button>
             </div>
-
         </div>
-
     </section>
 
+    <section id="reservations" class="reservation-section">
+        <h2>Prior Parking Reservation</h2>
+        <p class="section-description">
+            Reserve a parking slot in advance by selecting your date and time.
+        </p>
 
-    <!-- Parking Status -->
+        <div class="reservation-layout">
+            <div class="card reservation-card">
+                <h3>Book a Slot</h3>
+
+                <form id="reservationForm">
+                    <label for="reservationVehicle">Vehicle Number</label>
+                    <input id="reservationVehicle" type="text"
+                           placeholder="e.g. UK07AB1234" required>
+
+                    <label for="reservationSlot">Parking Slot</label>
+                    <select id="reservationSlot" required>
+                        <option value="">Select a slot</option>
+                        <option value="1">Slot 1</option>
+                        <option value="2">Slot 2</option>
+                        <option value="3">Slot 3</option>
+                        <option value="4">Slot 4</option>
+                        <option value="5">Slot 5</option>
+                        <option value="6">Slot 6</option>
+                        <option value="7">Slot 7</option>
+                        <option value="8">Slot 8</option>
+                        <option value="9">Slot 9</option>
+                        <option value="10">Slot 10</option>
+                    </select>
+
+                    <label for="reservedFrom">Reservation Starts</label>
+                    <input id="reservedFrom" type="datetime-local" required>
+
+                    <label for="reservedUntil">Reservation Ends</label>
+                    <input id="reservedUntil" type="datetime-local" required>
+
+                    <button type="submit">Confirm Reservation</button>
+                </form>
+            </div>
+
+            <div class="card reservations-list-card">
+                <div class="reservation-heading">
+                    <h3>Your Reservation Records</h3>
+                    <button type="button" onclick="loadReservations()">
+                        Refresh
+                    </button>
+                </div>
+                <div id="reservationList" aria-live="polite">
+                    Loading reservations...
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="navigation" class="reservation-section">
+        <h2>Smart Navigation (C + Dijkstra)</h2>
+        <p class="section-description">
+            Find the nearest available parking slot or calculate the shortest route from the entrance.
+        </p>
+        <div class="navigation-controls">
+            <button type="button" onclick="findNearestParkingSlot()">Find Nearest Available Slot</button>
+            <div class="route-control">
+                <label for="routeSlotId">Find route to slot</label>
+                <select id="routeSlotId">
+                    <option value="1">Slot 1</option>
+                    <option value="2">Slot 2</option>
+                    <option value="3">Slot 3</option>
+                    <option value="4">Slot 4</option>
+                    <option value="5">Slot 5</option>
+                    <option value="6">Slot 6</option>
+                    <option value="7">Slot 7</option>
+                    <option value="8">Slot 8</option>
+                    <option value="9">Slot 9</option>
+                    <option value="10">Slot 10</option>
+                </select>
+                <button type="button" onclick="findRouteToSlot()">Calculate Shortest Route</button>
+            </div>
+            <div id="navigationResult" class="navigation-result" aria-live="polite">
+                Navigation results will appear here.
+            </div>
+        </div>
+    </section>
+
     <section id="status" class="status-section">
-
         <h2>Parking Status</h2>
-
         <div class="parking-grid">
-
-            <div class="slot available" id="slot1">
-                <h3>Slot 1</h3>
-                <p>Available</p>
-            </div>
-
-            <div class="slot available" id="slot2">
-                <h3>Slot 2</h3>
-                <p>Available</p>
-            </div>
-
-            <div class="slot available" id="slot3">
-                <h3>Slot 3</h3>
-                <p>Available</p>
-            </div>
-
-            <div class="slot available" id="slot4">
-                <h3>Slot 4</h3>
-                <p>Available</p>
-            </div>
-
-            <div class="slot available" id="slot5">
-                <h3>Slot 5</h3>
-                <p>Available</p>
-            </div>
-
-            <div class="slot available" id="slot6">
-                <h3>Slot 6</h3>
-                <p>Available</p>
-            </div>
-
-            <div class="slot available" id="slot7">
-                <h3>Slot 7</h3>
-                <p>Available</p>
-            </div>
-
-            <div class="slot available" id="slot8">
-                <h3>Slot 8</h3>
-                <p>Available</p>
-            </div>
-
-            <div class="slot available" id="slot9">
-                <h3>Slot 9</h3>
-                <p>Available</p>
-            </div>
-
-            <div class="slot available" id="slot10">
-                <h3>Slot 10</h3>
-                <p>Available</p>
-            </div>
-
+            <div class="slot available" id="slot1"><h3>Slot 1</h3><p>Available</p></div>
+            <div class="slot available" id="slot2"><h3>Slot 2</h3><p>Available</p></div>
+            <div class="slot available" id="slot3"><h3>Slot 3</h3><p>Available</p></div>
+            <div class="slot available" id="slot4"><h3>Slot 4</h3><p>Available</p></div>
+            <div class="slot available" id="slot5"><h3>Slot 5</h3><p>Available</p></div>
+            <div class="slot available" id="slot6"><h3>Slot 6</h3><p>Available</p></div>
+            <div class="slot available" id="slot7"><h3>Slot 7</h3><p>Available</p></div>
+            <div class="slot available" id="slot8"><h3>Slot 8</h3><p>Available</p></div>
+            <div class="slot available" id="slot9"><h3>Slot 9</h3><p>Available</p></div>
+            <div class="slot available" id="slot10"><h3>Slot 10</h3><p>Available</p></div>
         </div>
-
     </section>
 
+    <div id="message" role="status" aria-live="polite"></div>
 
-    <!-- Message -->
-    <div id="message"></div>
-
-
-    <!-- Footer -->
     <footer>
-        <p>
-            Smart Parking Management System
-        </p>
-
-        <p>
-            B.Tech CSE Project
-        </p>
+        <p>Smart Parking Management System</p>
+        <p>B.Tech CSE Project</p>
     </footer>
 
-
     <script src="script.js"></script>
-
 </body>
-
 </html>
