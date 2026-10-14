@@ -4,83 +4,63 @@
 #include "linked_list.h"
 
 int main() {
-    printf("==================================================\n");
-    printf("   SMART PARKING & VIOLATION SYSTEM — C DSA TEST  \n");
-    printf("==================================================\n\n");
+    printf("========================================================\n");
+    printf("   SMART PARKING SYSTEM — C DSA ENGINE (3 MODULES)     \n");
+    printf("========================================================\n\n");
 
-    // 1. TEST WAITING QUEUE MODULE
-    printf("--- 1. TESTING WAITING QUEUE ---\n");
-    Queue waiting_q;
-    init_queue(&waiting_q);
+    // 1. PRE-BOOKING QUEUE MODULE
+    printf("--- 1. TESTING PRE-BOOKING RESERVATION QUEUE ---\n");
+    ReservationQueue res_q;
+    init_queue(&res_q);
 
-    Vehicle v1 = {"UK07-AB-1234", "10:00 AM"};
-    Vehicle v2 = {"DL01-XY-9876", "10:05 AM"};
+    Reservation r1 = {"UK07-AB-1234", "10:30 AM", 1};
+    Reservation r2 = {"DL01-XY-9876", "11:00 AM", 2};
+    enqueue_reservation(&res_q, r1);
+    enqueue_reservation(&res_q, r2);
+    display_reservations(&res_q);
 
-    enqueue(&waiting_q, v1);
-    enqueue(&waiting_q, v2);
-    display_queue(&waiting_q);
-
-    Vehicle popped_v;
-    if (dequeue(&waiting_q, &popped_v)) {
-        printf("[Action] Dequeued vehicle for allocation: %s\n", popped_v.vehicle_number);
-    }
-    display_queue(&waiting_q);
+    Reservation dequeued_r;
+    dequeue_reservation(&res_q, &dequeued_r);
+    printf("Allocating slot for arrived pre-booking: %s\n", dequeued_r.vehicle_number);
 
 
-    // 2. TEST RECENTLY EXITED STACK MODULE
-    printf("\n--- 2. TESTING RECENTLY EXITED STACK ---\n");
-    Stack exit_stack;
-    init_stack(&exit_stack);
+    // 2. SLIM LINKED LIST ACTIVE OCCUPANCY INDEX
+    printf("\n--- 2. TESTING ACTIVE OCCUPANCY INDEX (LINKED LIST) ---\n");
+    ActiveOccupancyList active_db;
+    init_active_list(&active_db);
 
-    ParkingRecord rec1 = {"UK07-AB-1234", 102, "10:00 AM", "11:30 AM", 45.0, 1, 0, 0};
-    ParkingRecord rec2 = {"DL01-XY-9876", 105, "10:05 AM", "12:15 PM", 60.0, 1, 0, 0};
+    insert_active_vehicle(&active_db, "UK07-AB-1234", 5);
+    insert_active_vehicle(&active_db, "DL01-XY-9876", 8);
+    display_active_vehicles(&active_db);
 
-    push_stack(&exit_stack, rec1);
-    push_stack(&exit_stack, rec2);
-    display_stack(&exit_stack);
-
-    ParkingRecord peeked;
-    if (peek_stack(&exit_stack, &peeked)) {
-        printf("[Peek] Latest exited vehicle: %s from Slot %d\n", peeked.vehicle_number, peeked.slot_id);
+    Node *search_res = search_active_vehicle(&active_db, "UK07-AB-1234");
+    if (search_res) {
+        printf("[Search Match] Vehicle %s currently in Slot %d\n",
+               search_res->record.vehicle_number, search_res->record.slot_id);
     }
 
 
-    // 3. TEST LINKED LIST DATABASE & TRAVERSAL SEARCH MODULE
-    printf("\n--- 3. TESTING LINKED LIST & TRAVERSAL SEARCH ---\n");
-    LinkedList db;
-    init_list(&db);
+    // 3. GATE OPERATOR UNDO STACK
+    printf("\n--- 3. TESTING GATE AUDIT & UNDO STACK ---\n");
+    UndoStack audit_stack;
+    init_stack(&audit_stack);
 
-    insert_record(&db, rec1);
-    insert_record(&db, rec2);
-    display_all_records(&db);
+    GateAction a1 = {"UK07-AB-1234", 5, "ENTRY"};
+    GateAction a2 = {"DL01-XY-9876", 8, "OVERRIDE"};
 
-    printf("\n--> Executing Linked List Traversal Search for 'UK07-AB-1234'...\n");
-    Node *found = search_record_by_vehicle(&db, "UK07-AB-1234");
-    if (found != NULL) {
-        printf("[SUCCESS] Record Found!\n");
-        printf("          Vehicle: %s | Slot: %d | Fee: $%.2f | Blacklisted: %s\n",
-               found->record.vehicle_number,
-               found->record.slot_id,
-               found->record.fee,
-               found->record.is_blacklisted ? "YES" : "NO");
-    } else {
-        printf("[FAILED] Record not found.\n");
-    }
+    push_action(&audit_stack, a1);
+    push_action(&audit_stack, a2);
+    display_undo_stack(&audit_stack);
 
+    GateAction popped_action;
+    pop_action(&audit_stack, &popped_action);
+    printf("[Operator Action] Reverted action: %s for %s\n", popped_action.action_type, popped_action.vehicle_number);
 
-    // 4. TEST VIOLATION MANAGEMENT & AUTOMATIC BLACKLISTING
-    printf("\n--- 4. TESTING VIOLATION SCORE & BLACKLISTING ---\n");
-    update_violation_score(&db, "UK07-AB-1234", 10); // Score becomes 10
-    update_violation_score(&db, "UK07-AB-1234", 6);  // Score becomes 16 (>= 15 -> Blacklisted)
+    free_active_list(&active_db);
 
-    display_all_records(&db);
-
-    // Clean up dynamic memory
-    free_list(&db);
-
-    printf("\n==================================================\n");
-    printf("      ALL DSA MODULE TESTS COMPLETED SUCCESSFULLY \n");
-    printf("==================================================\n");
+    printf("\n========================================================\n");
+    printf("   DSA ENGINE COMPLETED ALL 3 MODULE TESTS CLEANLY      \n");
+    printf("========================================================\n");
 
     return 0;
 }

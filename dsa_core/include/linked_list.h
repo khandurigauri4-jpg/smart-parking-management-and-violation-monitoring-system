@@ -3,24 +3,21 @@
 
 #include "common.h"
 
-// Node structure for dynamic storage
 typedef struct Node {
-    ParkingRecord record;
+    ActiveSlotRecord record;
     struct Node *next;
 } Node;
 
-// Linked List controller
 typedef struct {
     Node *head;
-    int size;
-} LinkedList;
+    int active_count;
+} ActiveOccupancyList;
 
-// Linked List & Search operations
-void init_list(LinkedList *list);
-void insert_record(LinkedList *list, ParkingRecord rec);
-Node* search_record_by_vehicle(const LinkedList *list, const char *vehicle_number);
-void update_violation_score(LinkedList *list, const char *vehicle_number, int score_to_add);
-void display_all_records(const LinkedList *list);
-void free_list(LinkedList *list);
+void init_active_list(ActiveOccupancyList *list);
+void insert_active_vehicle(ActiveOccupancyList *list, const char *vehicle_num, int slot_id);
+int remove_active_vehicle(ActiveOccupancyList *list, const char *vehicle_num);
+Node* search_active_vehicle(const ActiveOccupancyList *list, const char *vehicle_num);
+void display_active_vehicles(const ActiveOccupancyList *list);
+void free_active_list(ActiveOccupancyList *list);
 
 #endif // LINKED_LIST_H

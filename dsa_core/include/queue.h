@@ -6,19 +6,17 @@
 #define QUEUE_CAPACITY 50
 
 typedef struct {
-    Vehicle items[QUEUE_CAPACITY];
+    Reservation items[QUEUE_CAPACITY];
     int front;
     int rear;
     int count;
-} Queue;
+} ReservationQueue;
 
-// Queue operations
-void init_queue(Queue *q);
-int is_queue_empty(const Queue *q);
-int is_queue_full(const Queue *q);
-int enqueue(Queue *q, Vehicle v);
-int dequeue(Queue *q, Vehicle *out_v);
-int peek_queue(const Queue *q, Vehicle *out_v);
-void display_queue(const Queue *q);
+void init_queue(ReservationQueue *q);
+int is_queue_empty(const ReservationQueue *q);
+int is_queue_full(const ReservationQueue *q);
+int enqueue_reservation(ReservationQueue *q, Reservation r);
+int dequeue_reservation(ReservationQueue *q, Reservation *out_r);
+void display_reservations(const ReservationQueue *q);
 
 #endif // QUEUE_H

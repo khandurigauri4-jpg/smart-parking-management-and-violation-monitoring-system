@@ -6,17 +6,14 @@
 #define STACK_CAPACITY 50
 
 typedef struct {
-    ParkingRecord records[STACK_CAPACITY];
+    GateAction actions[STACK_CAPACITY];
     int top;
-} Stack;
+} UndoStack;
 
-// Stack operations
-void init_stack(Stack *s);
-int is_stack_empty(const Stack *s);
-int is_stack_full(const Stack *s);
-int push_stack(Stack *s, ParkingRecord rec);
-int pop_stack(Stack *s, ParkingRecord *out_rec);
-int peek_stack(const Stack *s, ParkingRecord *out_rec);
-void display_stack(const Stack *s);
+void init_stack(UndoStack *s);
+int is_stack_empty(const UndoStack *s);
+int push_action(UndoStack *s, GateAction action);
+int pop_action(UndoStack *s, GateAction *out_action);
+void display_undo_stack(const UndoStack *s);
 
 #endif // STACK_H

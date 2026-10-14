@@ -1,74 +1,68 @@
 #include "linked_list.h"
 
-void init_list(LinkedList *list) {
+void init_active_list(ActiveOccupancyList *list) {
     list->head = NULL;
-    list->size = 0;
+    list->active_count = 0;
 }
 
-void insert_record(LinkedList *list, ParkingRecord rec) {
+void insert_active_vehicle(ActiveOccupancyList *list, const char *vehicle_num, int slot_id) {
     Node *new_node = (Node*)malloc(sizeof(Node));
-    if (!new_node) {
-        printf("[Error] Memory allocation failed for Linked List node!\n");
-        return;
-    }
-    new_node->record = rec;
+    strncpy(new_node->record.vehicle_number, vehicle_num, VEHICLE_NUM_LEN);
+    new_node->record.slot_id = slot_id;
     new_node->next = list->head;
     list->head = new_node;
-    list->size++;
-    printf("[LinkedList] Record saved for vehicle %s.\n", rec.vehicle_number);
+    list->active_count++;
+    printf("[Active Occupancy Index] Parked %s in Slot %d.\n", vehicle_num, slot_id);
 }
 
-// SEARCH MODULE: Traversal over Linked List nodes
-Node* search_record_by_vehicle(const LinkedList *list, const char *vehicle_number) {
+int remove_active_vehicle(ActiveOccupancyList *list, const char *vehicle_num) {
+    Node *curr = list->head;
+    Node *prev = NULL;
+
+    while (curr != NULL) {
+        if (strcmp(curr->record.vehicle_number, vehicle_num) == 0) {
+            if (prev == NULL) {
+                list->head = curr->next;
+            } else {
+                prev->next = curr->next;
+            }
+            free(curr);
+            list->active_count--;
+            printf("[Active Occupancy Index] Vehicle %s removed on exit.\n", vehicle_num);
+            return 1;
+        }
+        prev = curr;
+        curr = curr->next;
+    }
+    return 0;
+}
+
+Node* search_active_vehicle(const ActiveOccupancyList *list, const char *vehicle_num) {
     Node *curr = list->head;
     while (curr != NULL) {
-        if (strcmp(curr->record.vehicle_number, vehicle_number) == 0) {
-            return curr; // Vehicle record match found
+        if (strcmp(curr->record.vehicle_number, vehicle_num) == 0) {
+            return curr;
         }
         curr = curr->next;
     }
-    return NULL; // Vehicle record not found
+    return NULL;
 }
 
-void update_violation_score(LinkedList *list, const char *vehicle_number, int score_to_add) {
-    Node *target = search_record_by_vehicle(list, vehicle_number);
-    if (target != NULL) {
-        target->record.violation_score += score_to_add;
-        if (target->record.violation_score >= 15) {
-            target->record.is_blacklisted = 1;
-            printf("[VIOLATION ALERT] Vehicle %s score reached %d! Status: BLACKLISTED.\n",
-                   vehicle_number, target->record.violation_score);
-        } else {
-            printf("[VIOLATION] Vehicle %s updated score: %d\n",
-                   vehicle_number, target->record.violation_score);
-        }
-    } else {
-        printf("[Error] Vehicle %s not found in records to update violation.\n", vehicle_number);
-    }
-}
-
-void display_all_records(const LinkedList *list) {
+void display_active_vehicles(const ActiveOccupancyList *list) {
     if (list->head == NULL) {
-        printf("[LinkedList] Database is empty.\n");
+        printf("[Active Occupancy Index] No active vehicles currently parked.\n");
         return;
     }
-    printf("\n=== ALL PARKING & VIOLATION RECORDS ===\n");
+    printf("\n--- SLIM ACTIVE OCCUPANCY INDEX (%d Parked) ---\n", list->active_count);
     Node *curr = list->head;
     while (curr != NULL) {
-        printf("Vehicle: %-12s | Slot: %-2d | Entry: %-8s | Exit: %-8s | Fee: $%-5.2f | Score: %-2d | Blacklisted: %s\n",
-               curr->record.vehicle_number,
-               curr->record.slot_id,
-               curr->record.entry_time,
-               curr->record.exit_time,
-               curr->record.fee,
-               curr->record.violation_score,
-               curr->record.is_blacklisted ? "YES" : "NO");
+        printf("Vehicle Plate: %-12s | Occupied Slot: %d\n", curr->record.vehicle_number, curr->record.slot_id);
         curr = curr->next;
     }
-    printf("=========================================\n");
+    printf("-----------------------------------------------\n");
 }
 
-void free_list(LinkedList *list) {
+void free_active_list(ActiveOccupancyList *list) {
     Node *curr = list->head;
     while (curr != NULL) {
         Node *temp = curr;
@@ -76,5 +70,5 @@ void free_list(LinkedList *list) {
         free(temp);
     }
     list->head = NULL;
-    list->size = 0;
+    list->active_count = 0;
 }
