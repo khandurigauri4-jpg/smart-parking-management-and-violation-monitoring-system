@@ -1,30 +1,19 @@
-#ifndef PARKING_SLOT_H
-#define PARKING_SLOT_H
-
+#pragma once
 #include <string>
 
-using namespace std;
-
+// One parking space, which is either free or occupied.
 class ParkingSlot
 {
 private:
-    int slotID;
-    string slotType;
-    bool available;
+    std::string slotID;
+    bool occupied;
 
 public:
-    ParkingSlot();
-    ParkingSlot(int id, string type);
+    ParkingSlot(std::string id);
 
-    void setSlotID(int id);
-    void setSlotType(string type);
-    void setAvailability(bool status);
+    std::string getSlotID() const;
+    bool isOccupied() const;
 
-    int getSlotID();
-    string getSlotType();
-    bool getAvailability();
-
-    void displaySlot();
+    void occupySlot();
+    void releaseSlot();
 };
-
-#endif

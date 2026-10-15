@@ -1,119 +1,43 @@
-#ifndef VEHICLE_H
-#define VEHICLE_H
-
+#pragma once
 #include <string>
 
-using namespace std;
-
-
-// Base Vehicle class
+// Base class: stores the details common to every vehicle.
 class Vehicle
 {
 private:
-    string vehicleNumber;
-    string vehicleCategory;
-    string vehicleType;
-    string ownerName;
+    std::string vehicleNumber;
+    std::string vehicleCategory;
+    std::string vehicleName;
 
 public:
-    // Constructors
-    Vehicle();
+    Vehicle(std::string number, std::string category, std::string name);
 
-    Vehicle(
-        string number,
-        string category,
-        string type,
-        string owner
-    );
+    std::string getVehicleNumber() const;
+    std::string getVehicleCategory() const;
+    std::string getVehicleName() const;
 
-    virtual ~Vehicle();
+    // Rs. per 30 minutes; each vehicle type gives its own rate
+    virtual double getRatePerBlock() const = 0;
 
-    // Setters
-    void setVehicleNumber(string number);
-    void setVehicleCategory(string category);
-    void setVehicleType(string type);
-    void setOwnerName(string owner);
+    virtual void displayDetails() const;
 
-    // Getters
-    string getVehicleNumber();
-    string getVehicleCategory();
-    string getVehicleType();
-    string getOwnerName();
-
-    // Polymorphic function
-    virtual void displayVehicle();
+    virtual ~Vehicle() {}
 };
 
-
-// ---------------------------------
-// Bike
-// ---------------------------------
-
-class Bike : public Vehicle
+// A TwoWheeler is a Vehicle whose category is always "2 Wheeler".
+class TwoWheeler : public Vehicle
 {
 public:
-    Bike(
-        string number,
-        string owner
-    );
+    TwoWheeler(std::string number, std::string name);
 
-    ~Bike();
-
-    void displayVehicle() override;
+    double getRatePerBlock() const override;
 };
 
-
-// ---------------------------------
-// Scooty
-// ---------------------------------
-
-class Scooty : public Vehicle
+// A FourWheeler is a Vehicle whose category is always "4 Wheeler".
+class FourWheeler : public Vehicle
 {
 public:
-    Scooty(
-        string number,
-        string owner
-    );
+    FourWheeler(std::string number, std::string name);
 
-    ~Scooty();
-
-    void displayVehicle() override;
+    double getRatePerBlock() const override;
 };
-
-
-// ---------------------------------
-// Car
-// ---------------------------------
-
-class Car : public Vehicle
-{
-public:
-    Car(
-        string number,
-        string owner
-    );
-
-    ~Car();
-
-    void displayVehicle() override;
-};
-
-
-// ---------------------------------
-// Truck
-// ---------------------------------
-
-class Truck : public Vehicle
-{
-public:
-    Truck(
-        string number,
-        string owner
-    );
-
-    ~Truck();
-
-    void displayVehicle() override;
-};
-
-#endif

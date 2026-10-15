@@ -1,33 +1,19 @@
-#ifndef USER_H
-#define USER_H
-
+#pragma once
 #include <string>
 #include "Vehicle.h"
 
-using namespace std;
-
+// A user (owner) has a vehicle.
 class User
 {
 private:
-    int userID;
-    string userName;
-    string phoneNumber;
-    Vehicle vehicle;
+    std::string name;
+    Vehicle* vehicle;
 
 public:
-    User(int id, string name, string phone, Vehicle v);
+    User(std::string n, Vehicle* v);
 
-    void setUserID(int id);
-    void setUserName(string name);
-    void setPhoneNumber(string phone);
-    void setVehicle(Vehicle v);
+    std::string getName() const;
+    Vehicle* getVehicle() const;
 
-    int getUserID();
-    string getUserName();
-    string getPhoneNumber();
-    Vehicle getVehicle();
-
-    void displayUser();
+    void displayUser() const;
 };
-
-#endif

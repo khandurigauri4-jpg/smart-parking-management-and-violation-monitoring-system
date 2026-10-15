@@ -1,213 +1,154 @@
 #include "../include/Ticket.h"
 #include <iostream>
-
 using namespace std;
 
+const int BLOCK_MINUTES = 30;   // time is charged in 30-minute blocks
 
-// Default constructor
-Ticket::Ticket()
-{
-    ticketID = 0;
-    vehicleNumber = "";
-    slotID = 0;
-
-    entryTime = "";
-    exitTime = "";
-
-    allowedHours = 0;
-    actualHours = 0;
-
-    fee = 0.0;
-
-    status = "Created";
-}
-
-
-// Parameterized constructor
-Ticket::Ticket(
-    int id,
-    string vehicle,
-    int slot
-)
+Ticket::Ticket(string id, User* u, ParkingSlot* s, string entry, int allowedHours)
 {
     ticketID = id;
-    vehicleNumber = vehicle;
-    slotID = slot;
+    user = u;
+    slot = s;
 
-    entryTime = "";
-    exitTime = "";
+    entryTime = convertTime(entry);
+    exitTime = -1;
 
-    allowedHours = 0;
-    actualHours = 0;
+    allowedMinutes = allowedHours * 60;
+    actualMinutes = 0;
+    overstayMinutes = 0;
 
-    fee = 0.0;
+    parkingFee = 0;
+    penalty = 0;
 
-    status = "Created";
+    slot->occupySlot();
 }
 
-
-// Setters
-void Ticket::setTicketID(int id)
+// "HH:MM" -> minutes after midnight, e.g. "10:30" -> 630
+int Ticket::convertTime(string time) const
 {
-    ticketID = id;
+    int hours = stoi(time.substr(0, 2));
+    int minutes = stoi(time.substr(3, 2));
+
+    return hours * 60 + minutes;
 }
 
-void Ticket::setVehicleNumber(string vehicle)
+// Minutes after midnight -> "HH:MM", e.g. 630 -> "10:30"
+string Ticket::formatTime(int minutes) const
 {
-    vehicleNumber = vehicle;
+    int hours = (minutes / 60) % 24;
+    int mins = minutes % 60;
+
+    string result = "";
+
+    if (hours < 10)
+        result += "0";
+    result += to_string(hours) + ":";
+
+    if (mins < 10)
+        result += "0";
+    result += to_string(mins);
+
+    return result;
 }
 
-void Ticket::setSlotID(int slot)
+// Every started block is charged in full: 1-30 min = 1 block, 31-60 min = 2 blocks
+double Ticket::calculateFee(int minutes, double ratePerBlock) const
 {
-    slotID = slot;
+    int blocks = minutes / BLOCK_MINUTES;
+
+    if (minutes % BLOCK_MINUTES != 0)
+        blocks++;
+
+    return blocks * ratePerBlock;
 }
 
-void Ticket::setEntryTime(string time)
+// Uses this vehicle's own rate, with a minimum charge of one block
+double Ticket::calculateFee(int minutes) const
 {
-    entryTime = time;
+    if (minutes < BLOCK_MINUTES)
+        minutes = BLOCK_MINUTES;
+
+    return calculateFee(minutes, user->getVehicle()->getRatePerBlock());
 }
 
-void Ticket::setExitTime(string time)
+void Ticket::exitParking(string exit)
 {
-    exitTime = time;
+    exitTime = convertTime(exit);
+
+    // Exit earlier than entry means the vehicle left the next day
+    if (exitTime < entryTime)
+        exitTime += 24 * 60;
+
+    actualMinutes = exitTime - entryTime;
+    parkingFee = calculateFee(actualMinutes);
+
+    if (actualMinutes > allowedMinutes)
+    {
+        // Overstay time is charged again as a penalty, so it costs double
+        overstayMinutes = actualMinutes - allowedMinutes;
+        penalty = calculateFee(overstayMinutes);
+    }
+    else
+    {
+        overstayMinutes = 0;
+        penalty = 0;
+    }
+
+    slot->releaseSlot();
 }
 
-void Ticket::setAllowedHours(int hours)
+bool Ticket::hasOverstay() const
 {
-    allowedHours = hours;
+    return overstayMinutes > 0;
 }
 
-void Ticket::setActualHours(int hours)
+double Ticket::getPenalty() const
 {
-    actualHours = hours;
+    return penalty;
 }
 
-void Ticket::setFee(double amount)
+void Ticket::displayTicket() const
 {
-    fee = amount;
-}
+    Vehicle* vehicle = user->getVehicle();
 
+    cout << "\n========== PARKING TICKET ==========\n";
 
-// Getters
-int Ticket::getTicketID()
-{
-    return ticketID;
-}
+    cout << "Ticket ID: " << ticketID << endl;
+    cout << "Vehicle Number: " << vehicle->getVehicleNumber() << endl;
+    cout << "Vehicle: " << vehicle->getVehicleName()
+         << " (" << vehicle->getVehicleCategory() << ")" << endl;
+    cout << "Owner Name: " << user->getName() << endl;
+    cout << "Slot ID: " << slot->getSlotID() << endl;
+    cout << "Parking Rate: Rs. " << vehicle->getRatePerBlock() << " per 30 minutes" << endl;
+    cout << "Entry Time: " << formatTime(entryTime) << endl;
 
-string Ticket::getVehicleNumber()
-{
-    return vehicleNumber;
-}
+    int allowedHours = allowedMinutes / 60;
+    cout << "Allowed Duration: " << allowedHours
+         << (allowedHours == 1 ? " hour" : " hours") << endl;
+    cout << "Expected Exit Time: " << formatTime(entryTime + allowedMinutes) << endl;
 
-int Ticket::getSlotID()
-{
-    return slotID;
-}
+    if (exitTime == -1)
+    {
+        cout << "Status: ACTIVE" << endl;
+    }
+    else
+    {
+        cout << "Actual Exit Time: " << formatTime(exitTime) << endl;
 
-string Ticket::getEntryTime()
-{
-    return entryTime;
-}
+        int hours = actualMinutes / 60;
+        cout << "Actual Duration: " << hours
+             << (hours == 1 ? " hour " : " hours ")
+             << actualMinutes % 60 << " minutes" << endl;
 
-string Ticket::getExitTime()
-{
-    return exitTime;
-}
+        cout << "Parking Fee: Rs. " << parkingFee << endl;
+        cout << "Overstay Penalty: Rs. " << penalty << endl;
+        cout << "Total Amount: Rs. " << parkingFee + penalty << endl;
 
-int Ticket::getAllowedHours()
-{
-    return allowedHours;
-}
+        if (hasOverstay())
+            cout << "Status: OVERSTAY - VIOLATION" << endl;
+        else
+            cout << "Status: COMPLETED" << endl;
+    }
 
-int Ticket::getActualHours()
-{
-    return actualHours;
-}
-
-double Ticket::getFee()
-{
-    return fee;
-}
-
-string Ticket::getStatus()
-{
-    return status;
-}
-
-
-// Calculate parking fee
-// Basic parking rate: Rs. 20 per hour
-double Ticket::calculateFee(int hours)
-{
-    fee = hours * 20.0;
-
-    return fee;
-}
-
-
-// Calculate parking fee with extra charge
-// This demonstrates function overloading
-double Ticket::calculateFee(
-    int hours,
-    double extraCharge
-)
-{
-    fee = (hours * 20.0) + extraCharge;
-
-    return fee;
-}
-
-
-// Activate ticket
-void Ticket::activateTicket()
-{
-    status = "Active";
-}
-
-
-// Complete ticket
-void Ticket::completeTicket()
-{
-    status = "Completed";
-}
-
-
-// Display ticket
-void Ticket::displayTicket()
-{
-    cout << "Ticket ID: "
-         << ticketID
-         << endl;
-
-    cout << "Vehicle Number: "
-         << vehicleNumber
-         << endl;
-
-    cout << "Slot ID: "
-         << slotID
-         << endl;
-
-    cout << "Entry Time: "
-         << entryTime
-         << endl;
-
-    cout << "Exit Time: "
-         << exitTime
-         << endl;
-
-    cout << "Allowed Parking Hours: "
-         << allowedHours
-         << endl;
-
-    cout << "Actual Parking Hours: "
-         << actualHours
-         << endl;
-
-    cout << "Parking Fee: Rs. "
-         << fee
-         << endl;
-
-    cout << "Status: "
-         << status
-         << endl;
+    cout << "====================================\n";
 }

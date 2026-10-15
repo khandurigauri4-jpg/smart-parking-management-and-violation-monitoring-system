@@ -1,62 +1,25 @@
 #include "../include/User.h"
 #include <iostream>
-
 using namespace std;
 
-User::User(int id, string name, string phone, Vehicle v)
-    : vehicle(v)
+User::User(string n, Vehicle* v)
 {
-    userID = id;
-    userName = name;
-    phoneNumber = phone;
-}
-
-void User::setUserID(int id)
-{
-    userID = id;
-}
-
-void User::setUserName(string name)
-{
-    userName = name;
-}
-
-void User::setPhoneNumber(string phone)
-{
-    phoneNumber = phone;
-}
-
-void User::setVehicle(Vehicle v)
-{
+    name = n;
     vehicle = v;
 }
 
-int User::getUserID()
+string User::getName() const
 {
-    return userID;
+    return name;
 }
 
-string User::getUserName()
-{
-    return userName;
-}
-
-string User::getPhoneNumber()
-{
-    return phoneNumber;
-}
-
-Vehicle User::getVehicle()
+Vehicle* User::getVehicle() const
 {
     return vehicle;
 }
 
-void User::displayUser()
+void User::displayUser() const
 {
-    cout << "User ID: " << userID << endl;
-    cout << "User Name: " << userName << endl;
-    cout << "Phone Number: " << phoneNumber << endl;
-
-    cout << "Vehicle Details:" << endl;
-    vehicle.displayVehicle();
+    cout << "Owner Name: " << name << endl;
+    cout << "Vehicle Number: " << vehicle->getVehicleNumber() << endl;
 }

@@ -1,63 +1,28 @@
 #include "../include/ParkingSlot.h"
-#include <iostream>
-
 using namespace std;
 
-ParkingSlot::ParkingSlot()
-{
-    slotID = 0;
-    slotType = "";
-    available = true;
-}
-
-ParkingSlot::ParkingSlot(int id, string type)
+ParkingSlot::ParkingSlot(string id)
 {
     slotID = id;
-    slotType = type;
-    available = true;
+    occupied = false;   // every new slot starts empty
 }
 
-void ParkingSlot::setSlotID(int id)
-{
-    slotID = id;
-}
-
-void ParkingSlot::setSlotType(string type)
-{
-    slotType = type;
-}
-
-void ParkingSlot::setAvailability(bool status)
-{
-    available = status;
-}
-
-int ParkingSlot::getSlotID()
+string ParkingSlot::getSlotID() const
 {
     return slotID;
 }
 
-string ParkingSlot::getSlotType()
+bool ParkingSlot::isOccupied() const
 {
-    return slotType;
+    return occupied;
 }
 
-bool ParkingSlot::getAvailability()
+void ParkingSlot::occupySlot()
 {
-    return available;
+    occupied = true;
 }
 
-void ParkingSlot::displaySlot()
+void ParkingSlot::releaseSlot()
 {
-    cout << "Slot ID: " << slotID << endl;
-    cout << "Slot Type: " << slotType << endl;
-
-    if (available)
-    {
-        cout << "Status: Available" << endl;
-    }
-    else
-    {
-        cout << "Status: Occupied" << endl;
-    }
+    occupied = false;
 }

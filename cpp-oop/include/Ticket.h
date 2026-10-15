@@ -1,79 +1,41 @@
-#ifndef TICKET_H
-#define TICKET_H
-
+#pragma once
 #include <string>
+#include "User.h"
+#include "ParkingSlot.h"
 
-using namespace std;
-
+// A parking ticket links a user (and their vehicle) to a parking slot.
+// Times are stored as minutes after midnight, e.g. 10:30 -> 630.
 class Ticket
 {
 private:
-    int ticketID;
-    string vehicleNumber;
-    int slotID;
+    std::string ticketID;
+    User* user;
+    ParkingSlot* slot;
 
-    string entryTime;
-    string exitTime;
+    int entryTime;
+    int exitTime;          // -1 means the vehicle has not left yet
 
-    int allowedHours;
-    int actualHours;
+    int allowedMinutes;
+    int actualMinutes;
+    int overstayMinutes;
 
-    double fee;
+    double parkingFee;
+    double penalty;
 
-    string status;
-
-public:
-    // Constructors
-    Ticket();
-
-    Ticket(
-        int id,
-        string vehicle,
-        int slot
-    );
-
-    // Setters
-    void setTicketID(int id);
-    void setVehicleNumber(string vehicle);
-    void setSlotID(int slot);
-
-    void setEntryTime(string time);
-    void setExitTime(string time);
-
-    void setAllowedHours(int hours);
-    void setActualHours(int hours);
-
-    void setFee(double amount);
-
-    // Getters
-    int getTicketID();
-    string getVehicleNumber();
-    int getSlotID();
-
-    string getEntryTime();
-    string getExitTime();
-
-    int getAllowedHours();
-    int getActualHours();
-
-    double getFee();
-    string getStatus();
-
-    // Parking fee calculation
-    double calculateFee(int hours);
+    int convertTime(std::string time) const;
+    std::string formatTime(int minutes) const;
 
     // Function overloading
-    double calculateFee(
-        int hours,
-        double extraCharge
-    );
+    double calculateFee(int minutes) const;
+    double calculateFee(int minutes, double ratePerBlock) const;
 
-    // Ticket lifecycle
-    void activateTicket();
-    void completeTicket();
+public:
+    Ticket(std::string id, User* u, ParkingSlot* s, std::string entry, int allowedHours);
 
-    // Display ticket
-    void displayTicket();
+    void exitParking(std::string exit);
+
+    bool hasOverstay() const;
+    double getPenalty() const;
+
+    void displayTicket() const;
 };
-
-#endif
