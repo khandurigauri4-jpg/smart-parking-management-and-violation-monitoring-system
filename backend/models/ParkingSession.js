@@ -26,6 +26,7 @@ const parkingSessionSchema = new mongoose.Schema(
             type: Date,
             default: null
         },
+        allowedHours: { type: Number, default: 2, min: 1, max: 24 },
         durationMinutes: {
             type: Number,
             default: 0

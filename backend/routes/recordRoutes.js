@@ -25,6 +25,8 @@ router.post("/vehicles", async (req, res) => {
             vehicleNumber,
             ownerName = "",
             ownerContact = "",
+            vehicleCategory = 4,
+            vehicleName = "Vehicle",
             blacklisted = false,
             blacklistReason = ""
         } = req.body;
@@ -42,6 +44,8 @@ router.post("/vehicles", async (req, res) => {
             vehicleNumber: vehicleNumber.trim().toUpperCase(),
             ownerName,
             ownerContact,
+            vehicleCategory: Number(vehicleCategory) === 2 ? 2 : 4,
+            vehicleName: typeof vehicleName === "string" && vehicleName.trim() ? vehicleName.trim() : "Vehicle",
             blacklisted,
             blacklistReason
         });
@@ -211,9 +215,6 @@ router.post("/violations", async (req, res) => {
         } = req.body;
 
         if (
-            typeof customerName !== "string" || !customerName.trim() || customerName.trim().length > 80 ||
-            typeof customerEmail !== "string" || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail.trim()) || customerEmail.trim().length > 120 ||
-            typeof customerPhone !== "string" || !/^[0-9+() -]{7,20}$/.test(customerPhone.trim()) ||
             typeof vehicleNumber !== "string" ||
             !vehicleNumber.trim() ||
             typeof violationType !== "string" ||

@@ -8,6 +8,9 @@ const ParkingSlot = require("./models/ParkingSlot");
 const parkingRoutes = require("./routes/parkingRoutes");
 const recordsRoutes = require("./routes/recordRoutes");
 const { compileParkingDSA } = require("./services/parkingDsa");
+const { compileTeamDSA } = require("./services/teamDsa");
+const { compileCppParking } = require("./services/cppParking");
+const ocrRoutes = require("./routes/ocrRoutes");
 
 const app = express();
 
@@ -15,7 +18,7 @@ const PORT = process.env.PORT || 3000;
 const TOTAL_SLOTS = 10;
 
 app.use(cors());
-app.use(express.json({ limit: "100kb" }));
+app.use(express.json({ limit: "8mb" }));
 
 app.get("/", (req, res) => {
     res.json({
@@ -37,6 +40,7 @@ app.get("/api/health", (req, res) => {
 
 app.use("/api/parking", parkingRoutes);
 app.use("/api", recordsRoutes);
+app.use("/api/ocr", ocrRoutes);
 
 app.use((req, res) => {
     res.status(404).json({
@@ -85,6 +89,10 @@ async function startServer() {
 
         compileParkingDSA();
         console.log("C parking and graph engine compiled.");
+        compileTeamDSA();
+        console.log("C stack, queue and linked-list engine compiled.");
+        compileCppParking();
+        console.log("C++ OOP parking engine compiled.");
 
         await mongoose.connect(process.env.MONGODB_URI);
 

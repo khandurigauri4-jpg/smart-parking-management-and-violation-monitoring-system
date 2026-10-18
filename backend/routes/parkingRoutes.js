@@ -5,7 +5,11 @@ const ParkingSlot = require("../models/ParkingSlot");
 const ParkingSession = require("../models/ParkingSession");
 const Reservation = require("../models/Reservation");
 const Vehicle = require("../models/Vehicle");
+const Violation = require("../models/Violation");
+const GateAction = require("../models/GateAction");
 const { findNearestSlot, findRoute } = require("../services/parkingDsa");
+const { searchActiveVehicle, listActiveVehicles, buildReservationQueue, buildActionStack } = require("../services/teamDsa");
+const { calculateCppFee } = require("../services/cppParking");
 
 const router = express.Router();
 
@@ -73,6 +77,62 @@ router.get("/route/:slotId", async (req, res) => {
     } catch (error) {
         console.error("Shortest-path DSA error:", error.message);
         res.status(500).json({ message: "Could not calculate shortest route." });
+    }
+});
+
+// Mradul's C linked list: active vehicle search and active occupancy index.
+router.get("/dsa/active-search", async (req, res) => {
+    const vehicleNumber = String(req.query.vehicleNumber || "").trim().toUpperCase();
+    if (!vehicleNumber) return res.status(400).json({ message: "Provide vehicleNumber." });
+    try {
+        const slots = await ParkingSlot.find({ occupied: true }).sort({ slotId: 1 });
+        res.json(searchActiveVehicle(slots, vehicleNumber));
+    } catch (error) {
+        console.error("Linked-list search failed:", error.message);
+        res.status(500).json({ message: "Could not search active vehicles." });
+    }
+});
+
+router.get("/dsa/active-vehicles", async (req, res) => {
+    try {
+        const slots = await ParkingSlot.find({ occupied: true }).sort({ slotId: 1 });
+        res.json(listActiveVehicles(slots));
+    } catch (error) {
+        res.status(500).json({ message: "Could not build active vehicle index." });
+    }
+});
+
+// Mradul's circular queue is rebuilt from MongoDB's booked reservations each request.
+router.get("/dsa/reservation-queue", async (req, res) => {
+    try {
+        const reservations = await Reservation.find({ status: "BOOKED", reservedUntil: { $gt: new Date() } }).sort({ reservedFrom: 1 }).limit(51);
+        if (reservations.length > 50) return res.status(409).json({ message: "C queue capacity is 50. Showing the database reservation list is still available at /api/reservations." });
+        res.json(buildReservationQueue(reservations));
+    } catch (error) {
+        console.error("Reservation queue failed:", error.message);
+        res.status(500).json({ message: "Could not build reservation queue." });
+    }
+});
+
+// Mradul's LIFO stack: recent gate actions persisted in MongoDB and loaded into the C stack.
+router.get("/dsa/action-stack", async (req, res) => {
+    try {
+        const actions = await GateAction.find().sort({ createdAt: -1 }).limit(50);
+        res.json(buildActionStack(actions));
+    } catch (error) {
+        console.error("Action stack failed:", error.message);
+        res.status(500).json({ message: "Could not build gate action stack." });
+    }
+});
+
+router.get("/sessions/ticket/:ticketId", async (req, res) => {
+    try {
+        const ticketId = String(req.params.ticketId || "").trim();
+        const session = await ParkingSession.findOne({ ticketId });
+        if (!session) return res.status(404).json({ message: "Ticket not found." });
+        res.json(session);
+    } catch (error) {
+        res.status(500).json({ message: "Could not fetch ticket details." });
     }
 });
 
@@ -166,13 +226,18 @@ router.post("/park", async (req, res) => {
         }
 
         const ticketId = "PK-" + crypto.randomUUID().slice(0, 8).toUpperCase();
+        const allowedHours = vehicleReservation
+            ? Math.max(1, Math.min(24, Math.ceil((vehicleReservation.reservedUntil - vehicleReservation.reservedFrom) / 3600000)))
+            : 2;
         session = await ParkingSession.create({
             ticketId,
             vehicleNumber: vehicle,
             slotId: slot.slotId,
             entryTime: new Date(),
+            allowedHours,
             status: "ACTIVE"
         });
+        GateAction.create({ actionType: "ENTRY", vehicleNumber: vehicle, slotId: slot.slotId }).catch(err => console.error("Could not persist ENTRY action:", err.message));
 
         if (vehicleReservation) {
             vehicleReservation.status = "COMPLETED";
@@ -223,11 +288,20 @@ router.post("/release", async (req, res) => {
         }
 
         const exitTime = new Date();
-        const durationMinutes = Math.max(
-            1,
-            Math.ceil((exitTime.getTime() - session.entryTime.getTime()) / 60000)
-        );
-        const fee = Math.ceil(durationMinutes / 60) * 20;
+        const registeredVehicle = await Vehicle.findOne({ vehicleNumber: session.vehicleNumber });
+        const toHHMM = date => `${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
+        const cppBill = calculateCppFee({
+            vehicleNumber: session.vehicleNumber,
+            ownerName: registeredVehicle?.ownerName || "Guest",
+            category: registeredVehicle?.vehicleCategory || 4,
+            vehicleName: registeredVehicle?.vehicleName || "Vehicle",
+            slotId,
+            entryTime: toHHMM(session.entryTime),
+            exitTime: toHHMM(exitTime),
+            allowedHours: session.allowedHours || 2
+        });
+        const durationMinutes = Math.max(1, Math.ceil((exitTime.getTime() - session.entryTime.getTime()) / 60000));
+        const fee = cppBill.total;
 
         session.exitTime = exitTime;
         session.durationMinutes = durationMinutes;
@@ -238,6 +312,10 @@ router.post("/release", async (req, res) => {
         slot.occupied = false;
         slot.vehicleNumber = "";
         await slot.save();
+        GateAction.create({ actionType: "EXIT", vehicleNumber: session.vehicleNumber, slotId }).catch(err => console.error("Could not persist EXIT action:", err.message));
+        if (cppBill.hasOverstay) {
+            Violation.create({ vehicleNumber: session.vehicleNumber, slotId, violationType: "OVERSTAY", description: `Overstayed by ${cppBill.overstayMinutes} minutes.`, detectedAt: exitTime, penaltyAmount: cppBill.penalty }).catch(err => console.error("Could not persist overstay violation:", err.message));
+        }
 
         res.json({
             message: "Vehicle released successfully.",
@@ -248,6 +326,9 @@ router.post("/release", async (req, res) => {
             exitTime,
             durationMinutes,
             fee,
+            parkingFee: cppBill.parkingFee,
+            penalty: cppBill.penalty,
+            hasOverstay: cppBill.hasOverstay,
             session
         });
     } catch (error) {

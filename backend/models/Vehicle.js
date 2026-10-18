@@ -17,6 +17,8 @@ const vehicleSchema = new mongoose.Schema(
             type: String,
             default: ""
         },
+        vehicleCategory: { type: Number, enum: [2, 4], default: 4 },
+        vehicleName: { type: String, default: "Vehicle", trim: true },
         blacklisted: {
             type: Boolean,
             default: false
