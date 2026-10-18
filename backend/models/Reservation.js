@@ -2,6 +2,9 @@ const mongoose = require("mongoose");
 
 const reservationSchema = new mongoose.Schema(
     {
+        customerName: { type: String, required: true, trim: true, maxlength: 80 },
+        customerEmail: { type: String, required: true, lowercase: true, trim: true, maxlength: 120 },
+        customerPhone: { type: String, required: true, trim: true, maxlength: 20 },
         vehicleNumber: {
             type: String,
             required: true,

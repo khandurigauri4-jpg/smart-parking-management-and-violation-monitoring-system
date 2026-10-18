@@ -72,11 +72,14 @@ router.get("/reservations", async (req, res) => {
 
 router.post("/reservations", async (req, res) => {
     try {
-        const { vehicleNumber, slotId, reservedFrom, reservedUntil } = req.body;
+        const { customerName, customerEmail, customerPhone, vehicleNumber, slotId, reservedFrom, reservedUntil } = req.body;
         const start = new Date(reservedFrom);
         const end = new Date(reservedUntil);
 
         if (
+            typeof customerName !== "string" || !customerName.trim() || customerName.trim().length > 80 ||
+            typeof customerEmail !== "string" || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail.trim()) || customerEmail.trim().length > 120 ||
+            typeof customerPhone !== "string" || !/^[0-9+() -]{7,20}$/.test(customerPhone.trim()) ||
             typeof vehicleNumber !== "string" ||
             !vehicleNumber.trim() ||
             !Number.isFinite(start.getTime()) ||
@@ -135,6 +138,9 @@ router.post("/reservations", async (req, res) => {
         }
 
         const reservation = await Reservation.create({
+            customerName: customerName.trim(),
+            customerEmail: customerEmail.trim().toLowerCase(),
+            customerPhone: customerPhone.trim(),
             vehicleNumber: vehicle,
             slotId: requestedSlot,
             reservedFrom: start,
@@ -205,6 +211,9 @@ router.post("/violations", async (req, res) => {
         } = req.body;
 
         if (
+            typeof customerName !== "string" || !customerName.trim() || customerName.trim().length > 80 ||
+            typeof customerEmail !== "string" || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail.trim()) || customerEmail.trim().length > 120 ||
+            typeof customerPhone !== "string" || !/^[0-9+() -]{7,20}$/.test(customerPhone.trim()) ||
             typeof vehicleNumber !== "string" ||
             !vehicleNumber.trim() ||
             typeof violationType !== "string" ||
