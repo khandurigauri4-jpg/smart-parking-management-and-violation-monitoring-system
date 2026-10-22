@@ -76,6 +76,48 @@ router.get("/route/:slotId", async (req, res) => {
     }
 });
 
+// Find a vehicle that is currently parked. The slot record is the source of truth
+// for current occupancy; the active session provides a fallback for older records.
+router.get("/dsa/active-search", async (req, res) => {
+    try {
+        const vehicleNumber = String(req.query.vehicleNumber || "").trim().toUpperCase();
+        if (!vehicleNumber) {
+            return res.status(400).json({ message: "Please enter a vehicle number." });
+        }
+
+        const slot = await ParkingSlot.findOne({ occupied: true, vehicleNumber });
+        if (slot) {
+            return res.json({ found: true, vehicleNumber, slotId: slot.slotId });
+        }
+
+        const session = await ParkingSession.findOne({ vehicleNumber, status: "ACTIVE" })
+            .sort({ entryTime: -1 });
+        if (session) {
+            return res.json({ found: true, vehicleNumber, slotId: session.slotId });
+        }
+
+        return res.json({ found: false, vehicleNumber });
+    } catch (error) {
+        console.error("Active vehicle search error:", error.message);
+        return res.status(500).json({ message: "Could not search currently parked vehicles." });
+    }
+});
+
+// Fetch one ticket by the ticket ID returned after parking or releasing a vehicle.
+router.get("/sessions/ticket/:ticketId", async (req, res) => {
+    try {
+        const ticketId = String(req.params.ticketId || "").trim();
+        const session = await ParkingSession.findOne({ ticketId });
+        if (!session) {
+            return res.status(404).json({ message: "Ticket not found." });
+        }
+        return res.json(session);
+    } catch (error) {
+        console.error("Ticket lookup error:", error.message);
+        return res.status(500).json({ message: "Could not load ticket details." });
+    }
+});
+
 router.get("/sessions", async (req, res) => {
     try {
         const sessions = await ParkingSession.find().sort({ entryTime: -1 });
