@@ -36,6 +36,9 @@ const parkingSessionSchema = new mongoose.Schema(
             default: 0,
             min: 0
         },
+        paymentStatus: { type: String, enum: ["PENDING", "PAID"], default: "PENDING" },
+        paymentReference: { type: String, default: "" },
+        paidAt: { type: Date, default: null },
         status: {
             type: String,
             enum: ["ACTIVE", "COMPLETED"],

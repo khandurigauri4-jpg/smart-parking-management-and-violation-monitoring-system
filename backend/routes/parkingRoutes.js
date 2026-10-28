@@ -118,6 +118,24 @@ router.get("/sessions/ticket/:ticketId", async (req, res) => {
     }
 });
 
+// Demo-only payment confirmation. No real money is transferred.
+router.patch("/sessions/ticket/:ticketId/simulate-payment", async (req, res) => {
+    try {
+        const session = await ParkingSession.findOne({ ticketId: String(req.params.ticketId || "").trim() });
+        if (!session) return res.status(404).json({ message: "Ticket not found." });
+        if (session.status !== "COMPLETED") return res.status(409).json({ message: "Payment is available after the vehicle exits and the final fee is calculated." });
+        if (session.paymentStatus === "PAID") return res.json({ message: "This ticket is already marked as paid in demo mode.", session });
+        session.paymentStatus = "PAID";
+        session.paymentReference = "DEMO-" + crypto.randomUUID().slice(0, 8).toUpperCase();
+        session.paidAt = new Date();
+        await session.save();
+        return res.json({ message: "Demo payment successful. No real money was transferred.", session });
+    } catch (error) {
+        console.error("Simulated ticket payment error:", error.message);
+        return res.status(500).json({ message: "Could not record demo payment." });
+    }
+});
+
 router.get("/sessions", async (req, res) => {
     try {
         const sessions = await ParkingSession.find().sort({ entryTime: -1 });
