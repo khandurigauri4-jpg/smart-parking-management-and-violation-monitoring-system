@@ -161,6 +161,24 @@ router.post("/reservations", async (req, res) => {
     }
 });
 
+// Demo-only reservation fee payment. No real money is transferred.
+router.patch("/reservations/:id/simulate-payment", async (req, res) => {
+    try {
+        const reservation = await Reservation.findById(req.params.id);
+        if (!reservation) return res.status(404).json({ message: "Reservation not found." });
+        if (reservation.status !== "BOOKED") return res.status(409).json({ message: "Only active reservations can be paid." });
+        if (reservation.paymentStatus === "PAID") return res.json({ message: "Reservation fee is already marked as paid in demo mode.", reservation });
+        reservation.paymentStatus = "PAID";
+        reservation.paymentReference = "DEMO-" + require("crypto").randomUUID().slice(0, 8).toUpperCase();
+        reservation.paidAt = new Date();
+        await reservation.save();
+        return res.json({ message: "Demo reservation payment successful. No real money was transferred.", reservation });
+    } catch (error) {
+        console.error("Simulated reservation payment error:", error.message);
+        return res.status(400).json({ message: "Could not record demo reservation payment." });
+    }
+});
+
 router.patch("/reservations/:id/cancel", async (req, res) => {
     try {
         const reservation = await Reservation.findById(req.params.id);
