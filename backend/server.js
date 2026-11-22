@@ -11,6 +11,7 @@ const { compileParkingDSA } = require("./services/parkingDsa");
 const { compileTeamDSA } = require("./services/teamDsa");
 const { compileCppParking } = require("./services/cppParking");
 const ocrRoutes = require("./routes/ocrRoutes");
+const authRoutes = require("./routes/authRoutes");
 
 const app = express();
 
@@ -41,6 +42,7 @@ app.get("/api/health", (req, res) => {
 app.use("/api/parking", parkingRoutes);
 app.use("/api", recordsRoutes);
 app.use("/api/ocr", ocrRoutes);
+app.use("/api/auth", authRoutes);
 
 app.use((req, res) => {
     res.status(404).json({
